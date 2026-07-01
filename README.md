@@ -24,21 +24,14 @@ Coloque o seguinte arquivo em `public/` para substituir o placeholder:
 
 ## Backend
 
-O envio do formulário (`src/lib/enviarLead.ts`) chama a serverless function `api/lead.js`, que repassa o lead para a Edge Function `webhook-lead` do Supabase CRM. O token de autenticação do webhook fica só no servidor (variável de ambiente), nunca no bundle do front-end.
+O envio do formulário (`src/lib/enviarLead.ts`) chama a serverless function `api/lead.js`, que insere o lead diretamente na tabela `public.webhook_leads_summary` do Supabase CRM via REST API, usando a `service_role key`. A chave fica só no servidor (variável de ambiente), nunca no bundle do front-end.
 
 Variáveis de ambiente necessárias (ver `.env.example`):
-- `SUPABASE_WEBHOOK_URL`
-- `SUPABASE_WEBHOOK_TOKEN`
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
 
 Para produção (Vercel), configure essas duas variáveis em Project Settings → Environment Variables — o `.env.local` não é commitado e não chega ao deploy.
 
-### Pendência no lado do Supabase
+### Observação sobre o CRM
 
-A tabela `webhook_leads_summary` ainda não tem a coluna `campanha`. Rodar no SQL Editor do Supabase:
-
-```sql
-alter table public.webhook_leads_summary
-add column if not exists campanha text;
-```
-
-A Edge Function/trigger que processa o payload também precisa ser ajustada para ler o campo `campanha` (enviado no nível raiz do JSON, junto com `id`/`timestamp`/`event`) e gravá-lo na nova coluna — isso não pôde ser feito a partir deste repositório.
+Esse insert é direto na tabela, sem passar pela Edge Function `webhook-lead` (que fazia scoring, criação de `contact`/`deal` e atribuição de vendedor por round-robin — mas estava rejeitando a autenticação em produção). Por isso os leads gerados aqui ficam com `contact_id`, `deal_id`, `owner_name` e `lead_score` vazios: aparecem na tabela `webhook_leads_summary`, mas não entram automaticamente no pipeline de vendas nem recebem vendedor atribuído. Se isso passar a ser necessário, o próximo passo é corrigir a autenticação da Edge Function (provavelmente desligar "Enforce JWT Verification" nas configs da function no painel do Supabase) e voltar a usá-la.
