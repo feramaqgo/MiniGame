@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd \"c:\\\\Users\\\\DELL\\\\Desktop\\\\feramaq---chutar-para-ganhar\\\\public\" && mv estadio-feramaq.png stadium-bg.png && ls -la)",
+      "Bash(cd \"c:\\\\Users\\\\DELL\\\\Desktop\\\\feramaq---chutar-para-ganhar\\\\\" && npm run build 2>&1 | tail -20)",
+      "Read(//c/Users/DELL/Desktop/**)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code} %{size_download} bytes\\\\n\" http://localhost:3000/stadium-bg.png)",
+      "Bash(NODE_OPTIONS=\"--use-system-ca\" npm view playwright version)",
+      "Bash(NODE_OPTIONS=\"--use-system-ca\" npm install -D playwright)",
+      "Bash(NODE_OPTIONS=\"--use-system-ca\" npx playwright install chromium)",
+      "Bash(curl -sL --ssl-no-revoke -o maquina-fmct.png \"https://feramaq.com.br/wp-content/uploads/2026/06/Estadio-FMCT.png\")",
+      "Bash(node -e ' *)",
+      "Bash(mkdir -p \"C:\\\\Users\\\\DELL\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-DELL-Desktop-feramaq---chutar-para-ganhar\\\\87779838-2c3c-41e0-a58c-d1d6c825ae0b\\\\scratchpad\\\\shots\")",
+      "Bash(node \"C:\\\\Users\\\\DELL\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-DELL-Desktop-feramaq---chutar-para-ganhar\\\\87779838-2c3c-41e0-a58c-d1d6c825ae0b\\\\scratchpad\\\\screenshot.js\" \"C:\\\\Users\\\\DELL\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-DELL-Desktop-feramaq---chutar-para-ganhar\\\\87779838-2c3c-41e0-a58c-d1d6c825ae0b\\\\scratchpad\\\\shots\")",
+      "Bash(cp \"C:\\\\Users\\\\DELL\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-DELL-Desktop-feramaq---chutar-para-ganhar\\\\87779838-2c3c-41e0-a58c-d1d6c825ae0b\\\\scratchpad\\\\screenshot.js\" \"c:\\\\Users\\\\DELL\\\\Desktop\\\\feramaq---chutar-para-ganhar\\\\__pw_screenshot.cjs\")",
+      "Bash(node __pw_screenshot.cjs \"C:\\\\Users\\\\DELL\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-DELL-Desktop-feramaq---chutar-para-ganhar\\\\87779838-2c3c-41e0-a58c-d1d6c825ae0b\\\\scratchpad\\\\shots\")",
+      "Bash(node __pw_vitoria.cjs \"C:\\\\Users\\\\DELL\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-DELL-Desktop-feramaq---chutar-para-ganhar\\\\87779838-2c3c-41e0-a58c-d1d6c825ae0b\\\\scratchpad\\\\shots\")",
+      "Bash(rm -f __pw_screenshot.cjs __pw_vitoria.cjs)",
+      "Bash(NODE_OPTIONS=\"--use-system-ca\" npm uninstall playwright)",
+      "Bash(grep -r \"frm_wh_2026\" dist/)",
+      "Bash(echo \"exit: $?\")"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\DELL\\Desktop\\feramaq---chutar-para-ganhar\\public"
+    ]
+  }
+}

@@ -1,0 +1,113 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;1,400&family=Russo+One&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Roboto", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Russo One", sans-serif;
+}
+
+:root {
+  --orange: #FF6801;
+  --black: #0D0D0D;
+  --graphite: #2A2A2E;
+  --green: #1F7A3D;
+  --gold: #F5C518;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #F8EFDD;
+  background-image:
+    linear-gradient(to bottom, rgba(255, 250, 240, 0.82) 0%, rgba(255, 244, 222, 0.74) 35%, rgba(250, 234, 200, 0.82) 100%),
+    url('/stadium-bg.png');
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  color: #2A2118;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+@media (max-width: 768px) {
+  body {
+    background-attachment: scroll;
+    background-position: center 15%;
+  }
+}
+
+/* Custom glow effects and highlights */
+.glow-orange {
+  box-shadow: 0 0 15px rgba(255, 104, 1, 0.45);
+}
+
+.glow-orange-lg {
+  box-shadow: 0 0 30px rgba(255, 104, 1, 0.6);
+}
+
+.glow-text-orange {
+  text-shadow: 0 0 8px rgba(255, 104, 1, 0.5);
+}
+
+.glow-green {
+  box-shadow: 0 0 15px rgba(31, 122, 61, 0.45);
+}
+
+.glow-gold {
+  box-shadow: 0 0 15px rgba(245, 197, 24, 0.45);
+}
+
+.stadium-bg {
+  background: transparent;
+}
+
+.stadium-glow {
+  background: transparent;
+}
+
+.stadium-lines-overlay {
+  display: none;
+}
+
+.stadium-center-circle {
+  display: none;
+}
+
+.btn-glow {
+  box-shadow: 0 0 20px rgba(255, 104, 1, 0.45);
+}
+
+.pitch-line {
+  background: linear-gradient(to top, #1F7A3D 0%, #165229 100%);
+}
+
+.unit-badge {
+  animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.pitch-gradient {
+  background: linear-gradient(to bottom, #111e14 0%, #162a1a 100%);
+}
+
+/* Scrollbar styling for high-contrast look */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F1E4C8;
+}
+::-webkit-scrollbar-thumb {
+  background: #D8B978;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #FF6801;
+}

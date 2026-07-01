@@ -1,0 +1,6 @@
+{
+  "name": "Feramaq - Chutar para Ganhar",
+  "description": "Single-page lead-generation landing with an interactive penalty kick mini-game for the Feramaq campaign.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
