@@ -28,7 +28,7 @@ export default async function handler(req, res) {
     lead_details: {
       id: webhookId,
       timestamp: new Date().toISOString(),
-      event: "Lead LP Feramaq Copa Pênalti",
+      event: "Lead LP Feramaq Pênalti",
       campanha: "MiniGame FMCT",
       dados_do_lead: {
         nome: dados.nomeCompleto,

@@ -81,7 +81,7 @@ export default function VitoriaScreen({ onAdvance }: VitoriaScreenProps) {
         >
           {/* Champion Badge */}
           <div className="inline-flex items-center gap-2 bg-[#F5C518]/20 border border-[#B8860B]/30 text-[#8A6500] rounded-full px-4 py-1.5 font-bold font-display text-xs uppercase tracking-widest">
-            🏆 SUCESSO COPA FERAMAQ
+            🏆 CAMPANHA FERAMAQ
           </div>
 
           {/* H1 Title */}

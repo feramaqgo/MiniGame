@@ -12,13 +12,22 @@ interface GameProps {
   onMiss: () => void;
 }
 
+// Goalkeeper (rhino) sweep range, save reach and speed. Save radius of 5
+// against a 56-wide sweep range gives roughly a 15-20% save rate for shots
+// inside the goal zone — tune here if the difficulty needs adjusting.
+const RHINO_RANGE_MIN = 22;
+const RHINO_RANGE_MAX = 78;
+const RHINO_SAVE_RADIUS = 5;
+const RHINO_SPEED = 55; // percentage points per second
+
 export default function Game({ onGoal, onMiss }: GameProps) {
   const [gameState, setGameState] = useState<"idle" | "kicking" | "resolved">("idle");
-  const [result, setResult] = useState<"goal" | "miss" | null>(null);
+  const [result, setResult] = useState<"goal" | "miss" | "defended" | null>(null);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const reticleRef = useRef<HTMLDivElement | null>(null);
   const ballRef = useRef<HTMLDivElement | null>(null);
+  const rhinoRef = useRef<HTMLImageElement | null>(null);
 
   // Animation values
   const aimPosRef = useRef<number>(50); // percentage 12 to 88
@@ -29,6 +38,13 @@ export default function Game({ onGoal, onMiss }: GameProps) {
   // Speed of the aim marker, in percentage points per second.
   // Equivalent to the old per-frame value of 1.3 assuming 60fps.
   const speed = 78;
+
+  // Goalkeeper animation values — independent speed/phase from the aim so
+  // its position isn't predictable from the reticle's.
+  const rhinoPosRef = useRef<number>(50);
+  const rhinoDirectionRef = useRef<number>(-1);
+  const rhinoAnimFrameIdRef = useRef<number | null>(null);
+  const rhinoLastTimeRef = useRef<number | null>(null);
 
   useEffect(() => {
     const updateAim = (timestamp: number) => {
@@ -71,18 +87,65 @@ export default function Game({ onGoal, onMiss }: GameProps) {
     };
   }, [gameState]);
 
+  useEffect(() => {
+    const updateRhino = (timestamp: number) => {
+      if (gameState !== "idle") return;
+
+      if (rhinoLastTimeRef.current === null) {
+        rhinoLastTimeRef.current = timestamp;
+      }
+      const deltaSeconds = (timestamp - rhinoLastTimeRef.current) / 1000;
+      rhinoLastTimeRef.current = timestamp;
+
+      let nextPos = rhinoPosRef.current + rhinoDirectionRef.current * RHINO_SPEED * deltaSeconds;
+
+      if (nextPos >= RHINO_RANGE_MAX) {
+        nextPos = RHINO_RANGE_MAX;
+        rhinoDirectionRef.current = -1;
+      } else if (nextPos <= RHINO_RANGE_MIN) {
+        nextPos = RHINO_RANGE_MIN;
+        rhinoDirectionRef.current = 1;
+      }
+
+      rhinoPosRef.current = nextPos;
+
+      if (rhinoRef.current) {
+        rhinoRef.current.style.left = `${nextPos}%`;
+      }
+
+      rhinoAnimFrameIdRef.current = requestAnimationFrame(updateRhino);
+    };
+
+    if (gameState === "idle") {
+      rhinoLastTimeRef.current = null;
+      rhinoAnimFrameIdRef.current = requestAnimationFrame(updateRhino);
+    }
+
+    return () => {
+      if (rhinoAnimFrameIdRef.current) {
+        cancelAnimationFrame(rhinoAnimFrameIdRef.current);
+      }
+    };
+  }, [gameState]);
+
   const handleKick = () => {
     if (gameState !== "idle") return;
 
     if (animFrameIdRef.current) {
       cancelAnimationFrame(animFrameIdRef.current);
     }
+    if (rhinoAnimFrameIdRef.current) {
+      cancelAnimationFrame(rhinoAnimFrameIdRef.current);
+    }
 
     setGameState("kicking");
     const finalX = aimPosRef.current;
+    const rhinoFinalX = rhinoPosRef.current;
 
-    // Hit detection: [26, 74] is GOAL
-    const isGoal = finalX >= 26 && finalX <= 74;
+    // Hit detection: [26, 74] is GOAL, unless the goalkeeper reaches it
+    const isInGoalZone = finalX >= 26 && finalX <= 74;
+    const isDefended = isInGoalZone && Math.abs(finalX - rhinoFinalX) <= RHINO_SAVE_RADIUS;
+    const isGoal = isInGoalZone && !isDefended;
 
     // Determine target location for the ball
     let targetX = finalX;
@@ -123,8 +186,12 @@ export default function Game({ onGoal, onMiss }: GameProps) {
     }
 
     setTimeout(() => {
-      setResult(isGoal ? "goal" : "miss");
+      setResult(isGoal ? "goal" : isDefended ? "defended" : "miss");
       setGameState("resolved");
+
+      if (isGoal) {
+        new Audio("/gol-sound.mp3").play().catch(() => {});
+      }
 
       setTimeout(() => {
         if (isGoal) {
@@ -237,6 +304,15 @@ export default function Game({ onGoal, onMiss }: GameProps) {
         <circle cx="50%" cy="85%" r="5" fill="#FFFFFF" />
       </svg>
 
+      {/* Goalkeeper (rhino) sweeping inside the goal, behind the ball/reticle */}
+      <img
+        ref={rhinoRef}
+        src="/rinoceronte-goleiro.png"
+        alt="Rinoceronte goleiro"
+        className="absolute h-[150px] md:h-[170px] w-auto -translate-x-1/2 z-[15] pointer-events-none object-contain drop-shadow-[0_8px_10px_rgba(0,0,0,0.5)]"
+        style={{ left: "50%", top: "30px" }}
+      />
+
       {/* Target Reticle Sweeping (Moves inside the goal area) */}
       <div
         ref={reticleRef}
@@ -300,6 +376,16 @@ export default function Game({ onGoal, onMiss }: GameProps) {
                 </h3>
                 <p className="text-sm md:text-base text-white font-mono uppercase tracking-widest mt-1">
                   Chute Perfeito!
+                </p>
+              </div>
+            ) : result === "defended" ? (
+              <div className="space-y-2">
+                <span className="text-5xl block animate-pulse">🦏</span>
+                <h3 className="font-display text-4xl text-amber-400 uppercase tracking-wider">
+                  DEFENDEU!
+                </h3>
+                <p className="text-sm md:text-base text-gray-300 font-mono uppercase tracking-widest mt-1">
+                  O goleiro pegou essa!
                 </p>
               </div>
             ) : (
