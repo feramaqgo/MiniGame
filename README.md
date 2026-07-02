@@ -21,6 +21,7 @@ Obs: `npm run dev` (Vite) não executa a serverless function em `api/lead.js` �
 
 Coloque os seguintes arquivos em `public/`:
 - `maquina-fmct.png` — foto da máquina exibida na tela de vitória
+- `bola.png` — imagem da bola usada no jogo
 - `rinoceronte-goleiro.png` — imagem do goleiro (rinoceronte) que se move dentro do gol; idealmente com fundo transparente
 - `gol-sound.mp3` — som tocado quando o jogador faz gol
 - `musica-fundo.mp3` — música de fundo, toca em loop a partir do primeiro clique do usuário (na tela inicial) e pode ser mutada pelo botão fixo no canto inferior direito

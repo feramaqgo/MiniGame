@@ -330,22 +330,12 @@ export default function Game({ onGoal, onMiss }: GameProps) {
         className="absolute left-1/2 top-[85%] -translate-x-1/2 -translate-y-1/2 w-16 h-16 z-30 pointer-events-none transition-all duration-700"
         style={{ transform: "translate(-50%, -50%) scale(1) rotate(0deg)" }}
       >
-        {/* Soccer Ball SVG */}
-        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-[0_12px_8px_rgba(0,0,0,0.6)]">
-          <circle cx="50" cy="50" r="48" fill="#FF6801" stroke="#000000" strokeWidth="2.5" />
-          <polygon points="50,38 60,45 56,57 44,57 40,45" fill="#1A1A1D" stroke="#000000" strokeWidth="2" />
-          <line x1="50" y1="38" x2="50" y2="20" stroke="#000000" strokeWidth="2" />
-          <line x1="60" y1="45" x2="76" y2="38" stroke="#000000" strokeWidth="2" />
-          <line x1="56" y1="57" x2="68" y2="72" stroke="#000000" strokeWidth="2" />
-          <line x1="44" y1="57" x2="32" y2="72" stroke="#000000" strokeWidth="2" />
-          <line x1="40" y1="45" x2="24" y2="38" stroke="#000000" strokeWidth="2" />
-          <polygon points="50,20 62,10 74,18 68,32 58,30" fill="none" stroke="#000000" strokeWidth="2" />
-          <polygon points="76,38 88,38 92,52 82,60 70,52" fill="none" stroke="#000000" strokeWidth="2" />
-          <polygon points="68,72 74,86 60,94 48,86 54,72" fill="none" stroke="#000000" strokeWidth="2" />
-          <polygon points="32,72 26,86 40,94 52,86 46,72" fill="none" stroke="#000000" strokeWidth="2" />
-          <polygon points="24,38 12,38 8,52 18,60 30,52" fill="none" stroke="#000000" strokeWidth="2" />
-          <path d="M 12 30 A 38 38 0 0 1 70 12 A 44 44 0 0 0 12 30" fill="#FFFFFF" opacity="0.25" />
-        </svg>
+        {/* Soccer Ball */}
+        <img
+          src="/bola.png"
+          alt="Bola"
+          className="w-full h-full object-contain drop-shadow-[0_12px_8px_rgba(0,0,0,0.6)]"
+        />
         {/* Ball Shadow */}
         {gameState === "idle" && (
           <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-14 h-4 bg-black/60 rounded-full blur-sm z-[-1]" />
