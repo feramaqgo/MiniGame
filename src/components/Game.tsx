@@ -24,15 +24,23 @@ export default function Game({ onGoal, onMiss }: GameProps) {
   const aimPosRef = useRef<number>(50); // percentage 12 to 88
   const directionRef = useRef<number>(1); // 1 = right, -1 = left
   const animFrameIdRef = useRef<number | null>(null);
+  const lastTimeRef = useRef<number | null>(null);
 
-  // Speed of the aim marker
-  const speed = 1.3;
+  // Speed of the aim marker, in percentage points per second.
+  // Equivalent to the old per-frame value of 1.3 assuming 60fps.
+  const speed = 78;
 
   useEffect(() => {
-    const updateAim = () => {
+    const updateAim = (timestamp: number) => {
       if (gameState !== "idle") return;
 
-      let nextPos = aimPosRef.current + directionRef.current * speed;
+      if (lastTimeRef.current === null) {
+        lastTimeRef.current = timestamp;
+      }
+      const deltaSeconds = (timestamp - lastTimeRef.current) / 1000;
+      lastTimeRef.current = timestamp;
+
+      let nextPos = aimPosRef.current + directionRef.current * speed * deltaSeconds;
 
       if (nextPos >= 88) {
         nextPos = 88;
@@ -52,6 +60,7 @@ export default function Game({ onGoal, onMiss }: GameProps) {
     };
 
     if (gameState === "idle") {
+      lastTimeRef.current = null;
       animFrameIdRef.current = requestAnimationFrame(updateAim);
     }
 
