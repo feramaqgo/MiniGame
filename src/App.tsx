@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { Volume2, VolumeX } from "lucide-react";
 import { Etapa, FormFields, TrackingFields } from "./types";
 import HeroScreen from "./components/HeroScreen";
 import InstrucaoScreen from "./components/InstrucaoScreen";
@@ -17,6 +18,28 @@ import { enviarLead } from "./lib/enviarLead";
 export default function App() {
   const [etapa, setEtapa] = useState<Etapa>("hero");
   const [formError, setFormError] = useState<string | null>(null);
+
+  // Background music — starts on the first user click (browsers block audio
+  // with sound until there's a user gesture), loops for the rest of the flow.
+  const musicRef = useRef<HTMLAudioElement | null>(null);
+  const [isMuted, setIsMuted] = useState(false);
+  const [musicStarted, setMusicStarted] = useState(false);
+
+  const startMusic = () => {
+    if (musicRef.current && !musicStarted) {
+      musicRef.current.volume = 0.4;
+      musicRef.current.play().catch(() => {});
+      setMusicStarted(true);
+    }
+  };
+
+  const toggleMute = () => {
+    if (musicRef.current) {
+      const nextMuted = !musicRef.current.muted;
+      musicRef.current.muted = nextMuted;
+      setIsMuted(nextMuted);
+    }
+  };
 
   // UTM & tracking parameters capture
   const [tracking, setTracking] = useState<TrackingFields>({
@@ -71,7 +94,14 @@ export default function App() {
   const renderScreen = () => {
     switch (etapa) {
       case "hero":
-        return <HeroScreen onAdvance={() => setEtapa("instrucao")} />;
+        return (
+          <HeroScreen
+            onAdvance={() => {
+              startMusic();
+              setEtapa("instrucao");
+            }}
+          />
+        );
       case "instrucao":
         return <InstrucaoScreen onAdvance={() => setEtapa("jogando")} />;
       case "jogando":
@@ -129,6 +159,20 @@ export default function App() {
       {/* Stadium Pitch Lines Overlays */}
       <div className="stadium-lines-overlay" />
       <div className="stadium-center-circle" />
+
+      {/* Background music */}
+      <audio ref={musicRef} src="/musica-fundo.mp3" loop />
+
+      {/* Mute toggle, visible once the music has started */}
+      {musicStarted && (
+        <button
+          onClick={toggleMute}
+          aria-label={isMuted ? "Ativar som" : "Desativar som"}
+          className="fixed bottom-4 right-4 z-50 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm border border-white/20 text-white flex items-center justify-center hover:bg-black/70 transition-colors cursor-pointer"
+        >
+          {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+        </button>
+      )}
 
       {/* Main Single-View viewport containing exactly one screen */}
       <main className="flex-1 flex flex-col relative z-10" id="campaign-viewport">
