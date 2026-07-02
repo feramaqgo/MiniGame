@@ -235,7 +235,7 @@ export default function Game({ onGoal, onMiss }: GameProps) {
         <img
           src="/gol.png"
           alt="Gol"
-          className="h-[140px] md:h-[160px] w-auto object-contain z-10 drop-shadow-[0_10px_10px_rgba(0,0,0,0.35)]"
+          className="h-[140px] md:h-[175px] w-auto object-contain z-10 drop-shadow-[0_10px_10px_rgba(0,0,0,0.35)]"
         />
 
         {/* Shaded Goal Zone overlay: [26%, 74%] of the container matches the
