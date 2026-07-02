@@ -118,7 +118,7 @@ export default function App() {
                   <line x1="44" y1="57" x2="32" y2="72" stroke="#040A06" strokeWidth="3.5" />
                   <line x1="40" y1="45" x2="24" y2="38" stroke="#040A06" strokeWidth="3.5" />
                 </svg>
-                <span>CHUTE DE PRECISÃO</span>
+                <span>ACERTE O GOL E GANHE UM UPGRADE</span>
               </h2>
               <Game
                 onGoal={() => setEtapa("vitoria")}
