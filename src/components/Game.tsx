@@ -231,21 +231,57 @@ export default function Game({ onGoal, onMiss }: GameProps) {
       {/* Goal Area at the top */}
       <div className="relative w-full h-[180px] flex items-end justify-center pt-6 pointer-events-none">
         
-        {/* Goal image */}
-        <img
-          src="/gol.png"
-          alt="Gol"
-          className="h-[140px] md:h-[175px] w-auto object-contain z-10 drop-shadow-[0_10px_10px_rgba(0,0,0,0.35)]"
-        />
+        {/* Goal SVG */}
+        <svg viewBox="0 0 600 200" className="w-[60%] h-[140px] md:h-[160px] z-10" overflow="visible">
+          {/* Net Background Shadow */}
+          <rect x="0" y="0" width="600" height="200" fill="rgba(0, 0, 0, 0.22)" rx="4" />
 
-        {/* Shaded Goal Zone overlay: [26%, 74%] of the container matches the
-            goal hit-detection thresholds in handleKick, so it stays aligned
-            with the goal art regardless of the image used. */}
-        <div className="absolute bottom-0 left-[26%] right-[26%] h-[140px] md:h-[160px] border-2 border-dashed border-emerald-500/40 bg-emerald-500/10 flex items-center justify-center pointer-events-none">
-          <span className="font-display text-[10px] md:text-sm text-emerald-950/40 uppercase tracking-widest font-bold select-none">
+          {/* Net Mesh Pattern */}
+          <defs>
+            <pattern id="net-mesh" width="12" height="12" patternUnits="userSpaceOnUse">
+              <path d="M 12 0 L 0 0 0 12" fill="none" stroke="rgba(255, 255, 255, 0.15)" strokeWidth="1" />
+            </pattern>
+          </defs>
+          <rect x="0" y="0" width="600" height="200" fill="url(#net-mesh)" rx="4" />
+
+          {/* Shaded Goal Zone: 80% width centered ([26%, 74%] container coordinates -> x=60 to x=540) */}
+          <rect
+            x="60"
+            y="0"
+            width="480"
+            height="200"
+            fill="rgba(16, 185, 129, 0.15)"
+            stroke="rgba(16, 185, 129, 0.4)"
+            strokeWidth="2"
+            strokeDasharray="4 4"
+          />
+
+          {/* Goal Zone Label */}
+          <text
+            x="300"
+            y="110"
+            fill="rgba(13, 46, 26, 0.4)"
+            fontSize="18"
+            fontFamily="Russo One"
+            textAnchor="middle"
+            letterSpacing="2"
+            className="select-none font-bold"
+          >
             ZONA DE GOL
-          </span>
-        </div>
+          </text>
+
+          {/* Goal Posts & Crossbar */}
+          {/* Left Post */}
+          <rect x="-6" y="0" width="12" height="200" fill="#FFFFFF" rx="2" className="drop-shadow-[0_0_4px_rgba(255,255,255,0.6)]" />
+          {/* Right Post */}
+          <rect x="594" y="0" width="12" height="200" fill="#FFFFFF" rx="2" className="drop-shadow-[0_0_4px_rgba(255,255,255,0.6)]" />
+          {/* Crossbar */}
+          <rect x="-6" y="-6" width="612" height="12" fill="#FFFFFF" rx="2" className="drop-shadow-[0_0_4px_rgba(255,255,255,0.6)]" />
+
+          {/* Goal posts shadows */}
+          <circle cx="0" cy="200" r="10" fill="rgba(0,0,0,0.4)" filter="blur(3px)" />
+          <circle cx="600" cy="200" r="10" fill="rgba(0,0,0,0.4)" filter="blur(3px)" />
+        </svg>
 
         {/* Shaded goal zone outside border overlay labels */}
         <div className="absolute top-[30px] left-[20%] w-[6%] h-[140px] md:h-[160px] flex items-center justify-center pointer-events-none">
