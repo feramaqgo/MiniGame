@@ -1,0 +1,37 @@
+import { motion } from "motion/react";
+import { PartyPopper } from "lucide-react";
+import Confetti from "./Confetti";
+import { Prize } from "../types";
+
+interface ResultadoScreenProps {
+  prize: Prize | null;
+}
+
+export default function ResultadoScreen({ prize }: ResultadoScreenProps) {
+  return (
+    <div className="w-full min-h-screen flex flex-col justify-center items-center py-12 px-4 relative overflow-hidden">
+      <Confetti />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="relative z-50 w-full max-w-md bg-[#1A1410]/90 border border-[#F5C518]/30 backdrop-blur-md rounded-3xl p-8 shadow-2xl text-center space-y-4"
+      >
+        <PartyPopper className="w-14 h-14 text-[#F5C518] mx-auto animate-bounce" />
+
+        <h2 className="font-display text-3xl md:text-4xl uppercase tracking-wider font-bold text-[#F5C518] glow-text-orange">
+          Parabéns!
+        </h2>
+
+        <p className="font-display text-xl md:text-2xl text-[#FFF6E6] uppercase tracking-wide">
+          Você ganhou: <span className="text-[#FF6801]">{prize?.name ?? "seu brinde"}</span>
+        </p>
+
+        <div className="bg-[#FF6801]/10 border border-[#FF6801]/30 rounded-xl p-4">
+          <p className="text-sm text-[#FFF6E6] font-sans leading-relaxed">
+            Mostre esta tela para o atendente do estande Feramaq e retire seu brinde agora mesmo.
+          </p>
+        </div>
+      </motion.div>
+    </div>
+  );
+}

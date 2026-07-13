@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    { "source": "/chute", "destination": "/chute.html" },
+    { "source": "/roleta", "destination": "/roleta.html" },
+    { "source": "/roleta/admin", "destination": "/roleta-admin.html" }
+  ]
+}
