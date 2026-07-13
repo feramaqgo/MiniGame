@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { ArrowRight, Gift, Play } from "lucide-react";
 import RoletaWheel from "./RoletaWheel";
+import VideoBackdrop from "./VideoBackdrop";
 import { Prize } from "../types";
 
 interface LandingScreenProps {
@@ -13,6 +14,7 @@ interface LandingScreenProps {
 export default function LandingScreen({ prizes, onAdvance, testMode, onTest }: LandingScreenProps) {
   return (
     <div className="w-full min-h-screen flex flex-col justify-center items-center py-12 px-4 relative overflow-hidden">
+      <VideoBackdrop src="/roleta-fundo.mp4" />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { PartyPopper, RotateCcw } from "lucide-react";
 import Confetti from "./Confetti";
+import VideoBackdrop from "./VideoBackdrop";
 import { Prize } from "../types";
 
 interface ResultadoScreenProps {
@@ -12,6 +13,7 @@ interface ResultadoScreenProps {
 export default function ResultadoScreen({ prize, testMode, onTestAgain }: ResultadoScreenProps) {
   return (
     <div className="w-full min-h-screen flex flex-col justify-center items-center py-12 px-4 relative overflow-hidden">
+      <VideoBackdrop src="/roleta-resultado-fundo.mp4" />
       <Confetti />
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
