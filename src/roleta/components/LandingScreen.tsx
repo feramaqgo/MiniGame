@@ -15,15 +15,15 @@ export default function LandingScreen({ prizes, onAdvance }: LandingScreenProps)
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="w-full max-w-md bg-[#1A1410]/80 border border-[#F5C518]/20 backdrop-blur-md rounded-3xl p-6 md:p-8 shadow-2xl text-center space-y-6"
+        className="w-full max-w-md bg-[#FFFAF0]/90 border border-black/5 backdrop-blur-md rounded-3xl p-6 md:p-8 shadow-2xl text-center space-y-6"
       >
         <div className="inline-flex items-center gap-2 bg-[#FF6801] text-black px-4 py-1.5 rounded-full font-display text-xs font-bold uppercase tracking-wider mx-auto">
           <Gift className="w-3.5 h-3.5" />
           <span>Estande Feramaq · Concreteshow</span>
         </div>
 
-        <h1 className="font-display text-3xl md:text-4xl uppercase leading-tight tracking-tight font-bold text-[#FFF6E6]">
-          Gire a roleta <span className="text-[#F5C518]">e ganhe na hora</span>
+        <h1 className="font-display text-3xl md:text-4xl uppercase leading-tight tracking-tight font-bold text-[#1A1208]">
+          Gire a roleta <span className="text-[#FF6801]">e ganhe na hora</span>
         </h1>
 
         <RoletaWheel prizes={prizes} targetPrizeId={null} />
@@ -36,7 +36,7 @@ export default function LandingScreen({ prizes, onAdvance }: LandingScreenProps)
           <ArrowRight className="w-5 h-5" />
         </button>
 
-        <p className="text-xs text-[#B8A98A] uppercase tracking-widest font-sans">
+        <p className="text-xs text-[#6B6048] uppercase tracking-widest font-sans">
           Um giro por pessoa · Brinde entregue na hora pelo atendente
         </p>
       </motion.div>

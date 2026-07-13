@@ -114,7 +114,7 @@ export default function App() {
   if (!prizesLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="font-sans text-sm text-[#B8A98A] uppercase tracking-widest animate-pulse">
+        <p className="font-sans text-sm text-[#6B6048] uppercase tracking-widest animate-pulse">
           Carregando...
         </p>
       </div>
@@ -122,7 +122,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-transparent text-[#FFF6E6] relative">
+    <div className="min-h-screen flex flex-col bg-transparent text-[#1A1208] relative">
       <main className="flex-1 flex flex-col relative z-10" id="roleta-viewport">
         {renderScreen()}
       </main>

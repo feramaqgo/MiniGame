@@ -12,13 +12,13 @@ export default function ErroScreen({ message, onRetry }: ErroScreenProps) {
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md bg-[#1A1410]/90 border border-[#F5C518]/20 backdrop-blur-md rounded-3xl p-8 shadow-2xl text-center space-y-4"
+        className="w-full max-w-md bg-[#FFFAF0]/90 border border-black/5 backdrop-blur-md rounded-3xl p-8 shadow-2xl text-center space-y-4"
       >
-        <AlertCircle className="w-12 h-12 text-rose-400 mx-auto animate-pulse" />
-        <h2 className="font-display text-2xl md:text-3xl uppercase tracking-tight font-bold text-[#FFF6E6]">
+        <AlertCircle className="w-12 h-12 text-rose-500 mx-auto animate-pulse" />
+        <h2 className="font-display text-2xl md:text-3xl uppercase tracking-tight font-bold text-[#1A1208]">
           Ops, algo deu errado
         </h2>
-        <p className="font-sans text-sm text-[#B8A98A] leading-relaxed">
+        <p className="font-sans text-sm text-[#6B6048] leading-relaxed">
           {message || "Não foi possível completar sua ação. Tente novamente."}
         </p>
         <button

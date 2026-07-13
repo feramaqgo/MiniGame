@@ -15,9 +15,9 @@
 
 body {
   font-family: var(--font-sans);
-  background-color: #14100A;
-  background-image: radial-gradient(circle at 50% 0%, rgba(255, 104, 1, 0.18) 0%, rgba(20, 16, 10, 0) 55%);
-  color: #FFF6E6;
+  background-color: #F8EFDD;
+  background-image: radial-gradient(circle at 50% 0%, rgba(255, 104, 1, 0.10) 0%, rgba(248, 239, 221, 0) 55%);
+  color: #2A2118;
   margin: 0;
   padding: 0;
   overflow-x: hidden;
@@ -40,10 +40,10 @@ body {
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #1F1810;
+  background: #F1E4C8;
 }
 ::-webkit-scrollbar-thumb {
-  background: #6B4E1E;
+  background: #D8B978;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {

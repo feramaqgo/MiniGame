@@ -16,13 +16,13 @@ export default function GirandoScreen({ prizes, targetPrizeId, onSpinComplete }:
         animate={{ opacity: 1, scale: 1 }}
         className="w-full max-w-md text-center space-y-6"
       >
-        <h2 className="font-display text-2xl md:text-3xl uppercase tracking-tight font-bold text-[#FFF6E6] glow-text-orange">
+        <h2 className="font-display text-2xl md:text-3xl uppercase tracking-tight font-bold text-[#1A1208] glow-text-orange">
           {targetPrizeId ? "Boa sorte!" : "Preparando seu giro..."}
         </h2>
 
         <RoletaWheel prizes={prizes} targetPrizeId={targetPrizeId} onSpinComplete={onSpinComplete} />
 
-        <p className="text-sm text-[#B8A98A] uppercase tracking-widest font-sans animate-pulse">
+        <p className="text-sm text-[#6B6048] uppercase tracking-widest font-sans animate-pulse">
           {targetPrizeId ? "Girando..." : "Aguarde um instante"}
         </p>
       </motion.div>

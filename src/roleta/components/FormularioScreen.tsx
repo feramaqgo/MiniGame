@@ -64,13 +64,13 @@ export default function FormularioScreen({ onSubmit, isLoading, errorMessage }: 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md bg-[#1A1410]/90 border border-[#F5C518]/20 backdrop-blur-md rounded-3xl p-6 md:p-8 shadow-2xl"
+        className="w-full max-w-md bg-[#FFFAF0]/90 border border-black/5 backdrop-blur-md rounded-3xl p-6 md:p-8 shadow-2xl"
       >
         <div className="text-center mb-6">
-          <h2 className="font-display text-2xl md:text-3xl uppercase leading-tight font-bold tracking-tight text-[#FFF6E6]">
+          <h2 className="font-display text-2xl md:text-3xl uppercase leading-tight font-bold tracking-tight text-[#1A1208]">
             Preencha pra girar
           </h2>
-          <p className="font-sans text-sm text-[#B8A98A] mt-2 leading-relaxed">
+          <p className="font-sans text-sm text-[#6B6048] mt-2 leading-relaxed">
             Cada pessoa tem direito a um giro só.
           </p>
         </div>
@@ -84,7 +84,7 @@ export default function FormularioScreen({ onSubmit, isLoading, errorMessage }: 
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1">
-            <label className="block font-sans text-xs font-bold text-[#B8A98A] uppercase tracking-widest flex items-center gap-1.5">
+            <label className="block font-sans text-xs font-bold text-[#4A4030] uppercase tracking-widest flex items-center gap-1.5">
               <User className="w-3.5 h-3.5" />
               Nome completo
             </label>
@@ -104,7 +104,7 @@ export default function FormularioScreen({ onSubmit, isLoading, errorMessage }: 
           </div>
 
           <div className="space-y-1">
-            <label className="block font-sans text-xs font-bold text-[#B8A98A] uppercase tracking-widest flex items-center gap-1.5">
+            <label className="block font-sans text-xs font-bold text-[#4A4030] uppercase tracking-widest flex items-center gap-1.5">
               <Phone className="w-3.5 h-3.5" />
               Celular
             </label>
@@ -121,7 +121,7 @@ export default function FormularioScreen({ onSubmit, isLoading, errorMessage }: 
           </div>
 
           <div className="space-y-1">
-            <label className="block font-sans text-xs font-bold text-[#B8A98A] uppercase tracking-widest flex items-center gap-1.5">
+            <label className="block font-sans text-xs font-bold text-[#4A4030] uppercase tracking-widest flex items-center gap-1.5">
               <FileText className="w-3.5 h-3.5" />
               CNPJ
             </label>
@@ -154,7 +154,7 @@ export default function FormularioScreen({ onSubmit, isLoading, errorMessage }: 
             </button>
           </div>
 
-          <div className="flex items-center justify-center gap-2 text-[10px] text-[#B8A98A] pt-1">
+          <div className="flex items-center justify-center gap-2 text-[10px] text-[#857a5e] pt-1">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
             <p className="font-sans leading-tight">
               Seus dados são usados apenas para contato comercial da Feramaq. Sem spam.
