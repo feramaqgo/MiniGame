@@ -1,14 +1,16 @@
 import { motion } from "motion/react";
-import { ArrowRight, Gift } from "lucide-react";
+import { ArrowRight, Gift, Play } from "lucide-react";
 import RoletaWheel from "./RoletaWheel";
 import { Prize } from "../types";
 
 interface LandingScreenProps {
   prizes: Prize[];
   onAdvance: () => void;
+  testMode?: boolean;
+  onTest?: () => void;
 }
 
-export default function LandingScreen({ prizes, onAdvance }: LandingScreenProps) {
+export default function LandingScreen({ prizes, onAdvance, testMode, onTest }: LandingScreenProps) {
   return (
     <div className="w-full min-h-screen flex flex-col justify-center items-center py-12 px-4 relative overflow-hidden">
       <motion.div
@@ -35,6 +37,16 @@ export default function LandingScreen({ prizes, onAdvance }: LandingScreenProps)
           <span>Girar agora</span>
           <ArrowRight className="w-5 h-5" />
         </button>
+
+        {testMode && (
+          <button
+            onClick={onTest}
+            className="w-full border-2 border-amber-500 text-amber-700 hover:bg-amber-500/10 font-display text-sm uppercase tracking-widest px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
+          >
+            <Play className="w-4 h-4" />
+            <span>Girar em modo teste (sem cadastro)</span>
+          </button>
+        )}
 
         <p className="text-xs text-[#6B6048] uppercase tracking-widest font-sans">
           Um giro por pessoa · Brinde entregue na hora pelo atendente
