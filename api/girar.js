@@ -1,22 +1,48 @@
 // Vercel Serverless Function — mantém a service_role key fora do bundle do front-end.
+
+// Valida o ID token do Google Sign-In direto com o Google (sem lib de
+// criptografia própria) e confirma que foi emitido pro nosso Client ID.
+async function verificarTokenGoogle(idToken) {
+  const response = await fetch(
+    `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`
+  );
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const claims = await response.json();
+
+  if (claims.aud !== process.env.GOOGLE_CLIENT_ID) return null;
+  if (claims.email_verified !== "true" && claims.email_verified !== true) return null;
+  if (!claims.sub) return null;
+
+  return {
+    sub: claims.sub,
+    email: claims.email || null,
+    name: claims.name || null,
+    picture: claims.picture || null,
+  };
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     res.status(405).json({ ok: false, message: "Method not allowed" });
     return;
   }
 
-  const { nome, celular, cnpj, tracking } = req.body || {};
+  const { idToken, celular, tracking } = req.body || {};
 
   const celularDigitos = (celular || "").replace(/\D/g, "");
-  const cnpjDigitos = (cnpj || "").replace(/\D/g, "");
 
-  if (
-    !nome ||
-    !nome.trim() ||
-    (celularDigitos.length !== 10 && celularDigitos.length !== 11) ||
-    cnpjDigitos.length !== 14
-  ) {
+  if (!idToken || (celularDigitos.length !== 10 && celularDigitos.length !== 11)) {
     res.status(400).json({ ok: false, message: "Dados inválidos" });
+    return;
+  }
+
+  const google = await verificarTokenGoogle(idToken);
+  if (!google) {
+    res.status(401).json({ ok: false, message: "Login com Google inválido. Tente novamente." });
     return;
   }
 
@@ -29,7 +55,13 @@ export default async function handler(req, res) {
         apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
         Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
       },
-      body: JSON.stringify({ p_nome: nome, p_celular: celular, p_cnpj: cnpj }),
+      body: JSON.stringify({
+        p_google_sub: google.sub,
+        p_google_email: google.email,
+        p_google_name: google.name,
+        p_google_picture: google.picture,
+        p_celular: celular,
+      }),
     });
   } catch (err) {
     console.error("Erro de conexão ao girar a roleta:", err);
@@ -79,9 +111,8 @@ export default async function handler(req, res) {
   try {
     const leadPayload = {
       webhook_id: participantId,
-      name: nome,
+      name: google.name,
       phone: celular,
-      cnpj_b2b: cnpj,
       lead_source: "feramaq-roleta",
       lead_tag: "LEAD-EVENTO",
       campanha: "Roleta Concreteshow",
@@ -90,7 +121,12 @@ export default async function handler(req, res) {
         timestamp: new Date().toISOString(),
         event: "Roleta Concreteshow",
         premio_ganho: prizeName,
-        dados_do_lead: { nome, celular, cnpj },
+        dados_do_lead: {
+          nome: google.name,
+          email: google.email,
+          celular,
+          google_sub: google.sub,
+        },
         utm: {
           utm_source: tracking?.utm_source ?? null,
           utm_medium: tracking?.utm_medium ?? null,

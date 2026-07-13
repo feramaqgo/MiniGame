@@ -1,17 +1,26 @@
 import { motion } from "motion/react";
-import { ArrowRight, Gift, Play } from "lucide-react";
+import { Gift, Play, Sparkles } from "lucide-react";
 import RoletaWheel from "./RoletaWheel";
 import VideoBackdrop from "./VideoBackdrop";
 import { Prize } from "../types";
 
-interface LandingScreenProps {
+interface ResgatarScreenProps {
   prizes: Prize[];
-  onAdvance: () => void;
+  nome: string | null;
+  onResgatar: () => void;
+  isLoading: boolean;
   testMode?: boolean;
   onTest?: () => void;
 }
 
-export default function LandingScreen({ prizes, onAdvance, testMode, onTest }: LandingScreenProps) {
+export default function ResgatarScreen({
+  prizes,
+  nome,
+  onResgatar,
+  isLoading,
+  testMode,
+  onTest,
+}: ResgatarScreenProps) {
   return (
     <div className="w-full min-h-screen flex flex-col justify-center items-center py-12 px-4 relative overflow-hidden">
       <VideoBackdrop src="/roleta-fundo.mp4" />
@@ -23,21 +32,23 @@ export default function LandingScreen({ prizes, onAdvance, testMode, onTest }: L
       >
         <div className="inline-flex items-center gap-2 bg-[#FF6801] text-black px-4 py-1.5 rounded-full font-display text-xs font-bold uppercase tracking-wider mx-auto">
           <Gift className="w-3.5 h-3.5" />
-          <span>Estande Feramaq · Concreteshow</span>
+          <span>Você venceu!</span>
         </div>
 
         <h1 className="font-display text-3xl md:text-4xl uppercase leading-tight tracking-tight font-bold text-[#1A1208]">
-          Gire a roleta <span className="text-[#FF6801]">e ganhe na hora</span>
+          {nome ? `Parabéns, ${nome.split(" ")[0]}!` : "Parabéns!"}{" "}
+          <span className="text-[#FF6801]">Gire e ganhe</span>
         </h1>
 
         <RoletaWheel prizes={prizes} targetPrizeId={null} />
 
         <button
-          onClick={onAdvance}
-          className="w-full bg-[#FF6801] hover:bg-[#e05c01] text-white font-display text-lg md:text-xl uppercase tracking-widest px-8 py-4 rounded-xl flex items-center justify-center gap-3 transition-all duration-300 cursor-pointer btn-glow hover:scale-[1.02] active:scale-[0.98]"
+          onClick={onResgatar}
+          disabled={isLoading}
+          className="w-full bg-[#FF6801] hover:bg-[#e05c01] disabled:opacity-60 text-white font-display text-lg md:text-xl uppercase tracking-widest px-8 py-4 rounded-xl flex items-center justify-center gap-3 transition-all duration-300 cursor-pointer btn-glow hover:scale-[1.02] active:scale-[0.98]"
         >
-          <span>Girar agora</span>
-          <ArrowRight className="w-5 h-5" />
+          <Sparkles className="w-5 h-5" />
+          <span>{isLoading ? "Resgatando..." : "Resgatar meu prêmio"}</span>
         </button>
 
         {testMode && (

@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import { Etapa, FormFields, Prize, TrackingFields } from "./types";
-import LandingScreen from "./components/LandingScreen";
-import FormularioScreen from "./components/FormularioScreen";
+import { Etapa, Prize, TrackingFields } from "./types";
+import ResgatarScreen from "./components/ResgatarScreen";
 import GirandoScreen from "./components/GirandoScreen";
 import ResultadoScreen from "./components/ResultadoScreen";
 import JaParticipouScreen from "./components/JaParticipouScreen";
@@ -9,14 +8,17 @@ import EsgotadoScreen from "./components/EsgotadoScreen";
 import ErroScreen from "./components/ErroScreen";
 import { buscarPremios } from "./lib/buscarPremios";
 import { girarRoleta } from "./lib/girarRoleta";
+import { requireSession } from "../shared/lib/session";
+import { ArcadeSession } from "../shared/types";
 
 export default function App() {
-  const [etapa, setEtapa] = useState<Etapa>("landing");
+  const [etapa, setEtapa] = useState<Etapa>("resgatar");
   const [prizes, setPrizes] = useState<Prize[]>([]);
   const [prizesLoaded, setPrizesLoaded] = useState(false);
   const [targetPrizeId, setTargetPrizeId] = useState<string | null>(null);
   const [prizeGanho, setPrizeGanho] = useState<Prize | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [resgatando, setResgatando] = useState(false);
 
   // Modo teste (ativado por ?teste=1 na URL). Não aparece pro público do evento.
   // Nele o fluxo inteiro é simulado no navegador: nada é enviado pro servidor,
@@ -25,6 +27,10 @@ export default function App() {
     () => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("teste") === "1"
   );
   const [spinNonce, setSpinNonce] = useState(0);
+
+  // Sessão do arcade (login feito no hub) — obrigatória, exceto em modo teste.
+  const [session, setSession] = useState<ArcadeSession | null>(null);
+  const [sessionChecked, setSessionChecked] = useState(false);
 
   const [tracking, setTracking] = useState<TrackingFields>({
     utm_source: null,
@@ -52,11 +58,23 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (testMode) {
+      setSessionChecked(true);
+      return;
+    }
+    const s = requireSession();
+    if (s) {
+      setSession(s);
+      setSessionChecked(true);
+    }
+  }, [testMode]);
+
+  useEffect(() => {
     buscarPremios().then((result) => {
       setPrizes(result.prizes);
       setPrizesLoaded(true);
       if (result.ok && result.prizes.length === 0) {
-        setEtapa((current) => (current === "landing" ? "esgotado" : current));
+        setEtapa((current) => (current === "resgatar" ? "esgotado" : current));
       }
     });
   }, []);
@@ -72,17 +90,18 @@ export default function App() {
     setEtapa("girando");
   };
 
-  const handleSubmit = async (dados: FormFields) => {
+  const handleResgatar = async () => {
     if (testMode) {
       girarTeste();
       return;
     }
+    if (!session) return;
 
+    setResgatando(true);
     setErrorMessage(null);
-    setTargetPrizeId(null);
-    setEtapa("girando");
 
-    const resultado = await girarRoleta(dados, tracking);
+    const resultado = await girarRoleta(session.idToken, session.celular, tracking);
+    setResgatando(false);
 
     if (!resultado.ok) {
       if (resultado.reason === "ja_participou") {
@@ -101,23 +120,22 @@ export default function App() {
     if (resultado.prize) {
       setPrizeGanho(resultado.prize);
       setTargetPrizeId(resultado.prize.id);
+      setEtapa("girando");
     }
   };
 
   const renderScreen = () => {
     switch (etapa) {
-      case "landing":
+      case "resgatar":
         return (
-          <LandingScreen
+          <ResgatarScreen
             prizes={prizes}
-            onAdvance={() => setEtapa("formulario")}
+            nome={session?.name ?? null}
+            onResgatar={handleResgatar}
+            isLoading={resgatando}
             testMode={testMode}
             onTest={girarTeste}
           />
-        );
-      case "formulario":
-        return (
-          <FormularioScreen onSubmit={handleSubmit} isLoading={false} errorMessage={errorMessage} />
         );
       case "girando":
         return (
@@ -136,14 +154,23 @@ export default function App() {
         return <EsgotadoScreen />;
       case "erro":
         return (
-          <ErroScreen message={errorMessage || undefined} onRetry={() => setEtapa("formulario")} />
+          <ErroScreen message={errorMessage || undefined} onRetry={() => setEtapa("resgatar")} />
         );
       default:
-        return <LandingScreen prizes={prizes} onAdvance={() => setEtapa("formulario")} />;
+        return (
+          <ResgatarScreen
+            prizes={prizes}
+            nome={session?.name ?? null}
+            onResgatar={handleResgatar}
+            isLoading={resgatando}
+            testMode={testMode}
+            onTest={girarTeste}
+          />
+        );
     }
   };
 
-  if (!prizesLoaded) {
+  if (!prizesLoaded || !sessionChecked) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="font-sans text-sm text-[#6B6048] uppercase tracking-widest animate-pulse">

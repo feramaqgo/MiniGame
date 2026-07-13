@@ -5,25 +5,29 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Volume2, VolumeX } from "lucide-react";
-import { Etapa, FormFields, TrackingFields } from "./types";
+import { Etapa } from "./types";
+import { requireSession } from "./shared/lib/session";
 import HeroScreen from "./components/HeroScreen";
 import InstrucaoScreen from "./components/InstrucaoScreen";
 import Game from "./components/Game";
 import ErroScreen from "./components/ErroScreen";
-import VitoriaScreen from "./components/VitoriaScreen";
-import FormularioScreen from "./components/FormularioScreen";
-import ObrigadoScreen from "./components/ObrigadoScreen";
-import { enviarLead } from "./lib/enviarLead";
 
 export default function App() {
   const [etapa, setEtapa] = useState<Etapa>("hero");
-  const [formError, setFormError] = useState<string | null>(null);
+  const [sessionChecked, setSessionChecked] = useState(false);
 
   // Background music — starts on the first user click (browsers block audio
   // with sound until there's a user gesture), loops for the rest of the flow.
   const musicRef = useRef<HTMLAudioElement | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [musicStarted, setMusicStarted] = useState(false);
+
+  useEffect(() => {
+    // Exige login feito no hub (/) antes de jogar — manda de volta se faltar.
+    if (requireSession()) {
+      setSessionChecked(true);
+    }
+  }, []);
 
   const startMusic = () => {
     if (musicRef.current && !musicStarted) {
@@ -38,55 +42,6 @@ export default function App() {
       const nextMuted = !musicRef.current.muted;
       musicRef.current.muted = nextMuted;
       setIsMuted(nextMuted);
-    }
-  };
-
-  // UTM & tracking parameters capture
-  const [tracking, setTracking] = useState<TrackingFields>({
-    utm_source: null,
-    utm_medium: null,
-    utm_campaign: null,
-    utm_content: null,
-    utm_term: null,
-    userAgent: "",
-    url: ""
-  });
-
-  useEffect(() => {
-    // Capture URLSearchParams on component load
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      setTracking({
-        utm_source: params.get("utm_source"),
-        utm_medium: params.get("utm_medium"),
-        utm_campaign: params.get("utm_campaign"),
-        utm_content: params.get("utm_content"),
-        utm_term: params.get("utm_term"),
-        userAgent: navigator.userAgent || "Unknown User Agent",
-        url: window.location.href
-      });
-    }
-  }, []);
-
-  // Handle form submission
-  const handleFormSubmit = async (dados: FormFields) => {
-    setEtapa("enviando");
-    setFormError(null);
-
-    try {
-      const response = await enviarLead(dados, tracking);
-
-      if (response.ok) {
-        setEtapa("obrigado");
-      } else {
-        // Fallback or submission error simulation
-        setFormError(response.message || "Erro ao salvar seus dados. Tente novamente.");
-        setEtapa("formulario");
-      }
-    } catch (err) {
-      console.error("Erro durante o envio do formulário:", err);
-      setFormError("Não foi possível conectar ao servidor. Verifique sua conexão.");
-      setEtapa("formulario");
     }
   };
 
@@ -118,10 +73,12 @@ export default function App() {
                   <line x1="44" y1="57" x2="32" y2="72" stroke="#040A06" strokeWidth="3.5" />
                   <line x1="40" y1="45" x2="24" y2="38" stroke="#040A06" strokeWidth="3.5" />
                 </svg>
-                <span>ACERTE O GOL E GANHE UM UPGRADE</span>
+                <span>ACERTE O GOL E GANHE UM PRÊMIO</span>
               </h2>
               <Game
-                onGoal={() => setEtapa("vitoria")}
+                onGoal={() => {
+                  window.location.href = "/roleta";
+                }}
                 onMiss={() => setEtapa("erro")}
               />
             </div>
@@ -129,30 +86,14 @@ export default function App() {
         );
       case "erro":
         return <ErroScreen onRetry={() => setEtapa("jogando")} />;
-      case "vitoria":
-        return <VitoriaScreen onAdvance={() => setEtapa("formulario")} />;
-      case "formulario":
-        return (
-          <FormularioScreen
-            onSubmit={handleFormSubmit}
-            isLoading={false}
-            errorMessage={formError}
-          />
-        );
-      case "enviando":
-        return (
-          <FormularioScreen
-            onSubmit={handleFormSubmit}
-            isLoading={true}
-            errorMessage={formError}
-          />
-        );
-      case "obrigado":
-        return <ObrigadoScreen />;
       default:
         return <HeroScreen onAdvance={() => setEtapa("instrucao")} />;
     }
   };
+
+  if (!sessionChecked) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-transparent text-[#2A2118] relative">

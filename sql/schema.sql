@@ -1,7 +1,11 @@
 -- Roleta Concreteshow — schema novo, aditivo.
 -- Não altera public.webhook_leads_summary (tabela compartilhada do CRM,
 -- usada também pelo mini-game de pênalti). Rodar manualmente no SQL Editor
--- do Supabase antes do evento.
+-- do Supabase antes do evento (instalação do zero).
+--
+-- Se você já rodou uma versão anterior deste schema (com nome/celular/CNPJ
+-- digitados) em produção, use sql/migration_google_login.sql em vez deste
+-- arquivo — ele faz a transição sem derrubar a tabela.
 
 create extension if not exists pgcrypto;
 
@@ -22,27 +26,27 @@ create index roleta_prizes_active_stock_idx
   on public.roleta_prizes (active, remaining_stock);
 
 -- ---------------------------------------------------------------------
--- Participantes — colunas geradas normalizadas carregam a unicidade
--- (um giro por nome, por celular e por cnpj, cada um isoladamente)
+-- Participantes — identidade vem do login com Google (nome, e-mail e o
+-- `sub`, o id único e estável da conta Google — mais forte que e-mail
+-- pra travar giro repetido, já que e-mail permite truques de alias).
+-- Celular ainda é pedido à parte, como contato comercial.
 -- ---------------------------------------------------------------------
 create table public.roleta_participants (
   id uuid primary key default gen_random_uuid(),
-  name text not null,
+  google_sub text,
+  google_email text,
+  google_name text,
+  google_picture text,
+  name text,
   phone text not null,
-  cnpj text not null,
-  name_normalized  text generated always as
-    (lower(regexp_replace(btrim(name), '\s+', ' ', 'g'))) stored,
   phone_normalized text generated always as
     (regexp_replace(phone, '\D', '', 'g')) stored,
-  cnpj_normalized  text generated always as
-    (regexp_replace(cnpj, '\D', '', 'g')) stored,
   prize_id uuid references public.roleta_prizes(id),
   prize_name text,
   crm_synced boolean not null default false,
   created_at timestamptz not null default now(),
-  constraint roleta_participants_name_key  unique (name_normalized),
-  constraint roleta_participants_phone_key unique (phone_normalized),
-  constraint roleta_participants_cnpj_key  unique (cnpj_normalized)
+  constraint roleta_participants_google_sub_key unique (google_sub),
+  constraint roleta_participants_phone_key unique (phone_normalized)
 );
 
 alter table public.roleta_prizes enable row level security;
@@ -52,13 +56,15 @@ alter table public.roleta_participants enable row level security;
 
 -- ---------------------------------------------------------------------
 -- RPC girar_roleta — transação única:
--- reivindica unicidade -> trava candidatos -> sorteio ponderado
--- -> decrementa estoque -> devolve o prêmio sorteado
+-- reivindica unicidade (google_sub + celular) -> trava candidatos
+-- -> sorteio ponderado -> decrementa estoque -> devolve o prêmio sorteado
 -- ---------------------------------------------------------------------
 create or replace function public.girar_roleta(
-  p_nome text,
-  p_celular text,
-  p_cnpj text
+  p_google_sub text,
+  p_google_email text,
+  p_google_name text,
+  p_google_picture text,
+  p_celular text
 )
 returns table (participant_id uuid, prize_id uuid, prize_name text)
 language plpgsql
@@ -77,11 +83,13 @@ declare
   v_chosen_name     text;
   i                 integer;
 begin
-  -- 1) Reivindica a unicidade primeiro. Qualquer uma das 3 constraints
-  --    disparando = "já participou", um único erro amigável.
+  -- 1) Reivindica a unicidade primeiro (conta Google OU celular já usados
+  --    = "já participou", um único erro amigável).
   begin
-    insert into public.roleta_participants (name, phone, cnpj)
-    values (p_nome, p_celular, p_cnpj)
+    insert into public.roleta_participants
+      (google_sub, google_email, google_name, google_picture, name, phone)
+    values
+      (p_google_sub, p_google_email, p_google_name, p_google_picture, p_google_name, p_celular)
     returning id into v_participant_id;
   exception
     when unique_violation then
@@ -137,14 +145,15 @@ begin
 end;
 $$;
 
-revoke all on function public.girar_roleta(text, text, text) from public, anon, authenticated;
-grant execute on function public.girar_roleta(text, text, text) to service_role;
+revoke all on function public.girar_roleta(text, text, text, text, text) from public, anon, authenticated;
+grant execute on function public.girar_roleta(text, text, text, text, text) to service_role;
 
 -- ---------------------------------------------------------------------
 -- Seed de exemplo — AJUSTE os nomes e quantidades reais antes do evento.
 -- ---------------------------------------------------------------------
 -- insert into public.roleta_prizes (name, initial_stock, remaining_stock, sort_order) values
---   ('Boné Feramaq', 50, 50, 1),
---   ('Camiseta Feramaq', 40, 40, 2),
---   ('Chaveiro Feramaq', 100, 100, 3),
---   ('Vale-desconto Especial', 10, 10, 4);
+--   ('Boné', 15, 15, 1),
+--   ('Trena', 73, 73, 2),
+--   ('Cordão', 143, 143, 3),
+--   ('Caneta', 153, 153, 4),
+--   ('Abridor', 216, 216, 5);

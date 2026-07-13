@@ -1,16 +1,16 @@
 export type Etapa =
-  | "landing"
-  | "formulario"
+  | "resgatar"
   | "girando"
   | "resultado"
   | "ja_participou"
   | "esgotado"
   | "erro";
 
-export interface FormFields {
-  nome: string;
-  celular: string;
-  cnpj: string;
+export interface GoogleProfile {
+  idToken: string;
+  name: string | null;
+  email: string | null;
+  picture: string | null;
 }
 
 export interface TrackingFields {

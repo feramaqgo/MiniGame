@@ -1,4 +1,4 @@
-import { FormFields, Prize, TrackingFields } from "../types";
+import { Prize, TrackingFields } from "../types";
 
 export interface GirarResultado {
   ok: boolean;
@@ -8,19 +8,15 @@ export interface GirarResultado {
 }
 
 export async function girarRoleta(
-  dados: FormFields,
+  idToken: string,
+  celular: string,
   tracking: TrackingFields
 ): Promise<GirarResultado> {
   try {
     const response = await fetch("/api/girar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        nome: dados.nome,
-        celular: dados.celular,
-        cnpj: dados.cnpj,
-        tracking,
-      }),
+      body: JSON.stringify({ idToken, celular, tracking }),
     });
 
     const result = await response.json().catch(() => ({}));

@@ -45,7 +45,7 @@ export default function InstrucaoScreen({ onAdvance }: InstrucaoScreenProps) {
               transition={{ delay: 0.2 }}
               className="font-sans text-base md:text-xl text-[#4A4030] max-w-2xl mx-auto leading-relaxed"
             >
-              A mira vai de um lado para o outro. Toque na tela, clique ou aperte espaço para chutar na hora certa. Acertou o gol, você garante o direito de resgatar o upgrade.
+              A mira vai de um lado para o outro. Toque na tela, clique ou aperte espaço para chutar na hora certa. Acertou o gol, você garante a chance de girar a roleta de prêmios.
             </motion.p>
           </div>
         </div>
