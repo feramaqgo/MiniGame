@@ -32,9 +32,15 @@ export default function MangoteGame({ onWin }: MangoteGameProps) {
   const scoreRef = useRef(0);
 
   const novaComida = useCallback(() => {
+    // Nasce longe das bordas (margem de 2 células) — fica mais fácil de pegar.
+    const MARGEM = 2;
+    const faixa = GRID - MARGEM * 2;
     let c: Cell;
     do {
-      c = { x: Math.floor(Math.random() * GRID), y: Math.floor(Math.random() * GRID) };
+      c = {
+        x: MARGEM + Math.floor(Math.random() * faixa),
+        y: MARGEM + Math.floor(Math.random() * faixa),
+      };
     } while (snakeRef.current.some((s) => mesmaCelula(s, c)));
     foodRef.current = c;
   }, []);

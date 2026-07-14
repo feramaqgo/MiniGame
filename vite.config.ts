@@ -17,6 +17,7 @@ export default defineConfig(() => {
           main: path.resolve(__dirname, 'index.html'),
           chute: path.resolve(__dirname, 'chute.html'),
           cobrinha: path.resolve(__dirname, 'cobrinha.html'),
+          memoria: path.resolve(__dirname, 'memoria.html'),
           roleta: path.resolve(__dirname, 'roleta.html'),
           'roleta-admin': path.resolve(__dirname, 'roleta-admin.html'),
         },

@@ -25,7 +25,7 @@ const jogos = [
     descricao: "Encontre os pares e concorra a um prêmio.",
     href: "/memoria",
     icon: Brain,
-    disponivel: false,
+    disponivel: true,
   },
   {
     titulo: "Mangote de Concreto",

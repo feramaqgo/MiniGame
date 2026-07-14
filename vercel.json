@@ -2,6 +2,7 @@
   "rewrites": [
     { "source": "/chute", "destination": "/chute.html" },
     { "source": "/cobrinha", "destination": "/cobrinha.html" },
+    { "source": "/memoria", "destination": "/memoria.html" },
     { "source": "/roleta", "destination": "/roleta.html" },
     { "source": "/roleta/admin", "destination": "/roleta-admin.html" }
   ]
