@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, Brain, Cable, Grid3x3, Target, Lock } from "lucide-react";
+import { ArrowRight, Brain, Cable, Grid3x3, Target, Lock, Play } from "lucide-react";
 import { formatarWhatsApp, validarWhatsApp } from "../shared/lib/validation";
 import { renderGoogleButton, decodeGooglePayload } from "../shared/lib/googleIdentity";
 import { getSession, saveSession } from "../shared/lib/session";
@@ -83,6 +83,20 @@ export default function Hub() {
     setSession(novaSessao);
   };
 
+  // Botão demo: entra sem login real, só pra testar/mostrar o fluxo.
+  const entrarDemo = () => {
+    const demoSession: ArcadeSession = {
+      idToken: "demo",
+      celular: "(00) 00000-0000",
+      name: "Visitante Demo",
+      email: null,
+      picture: null,
+      demo: true,
+    };
+    saveSession(demoSession);
+    setSession(demoSession);
+  };
+
   // ------------------------------------------------------------------
   // Tela 1: login
   // ------------------------------------------------------------------
@@ -106,6 +120,14 @@ export default function Hub() {
               <div className="flex justify-center py-2">
                 <div ref={googleButtonRef} />
               </div>
+
+              <button
+                onClick={entrarDemo}
+                className="w-full border-2 border-amber-500 text-amber-700 hover:bg-amber-500/10 font-display text-sm uppercase tracking-widest px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
+              >
+                <Play className="w-4 h-4" />
+                <span>Entrar em modo demo</span>
+              </button>
             </>
           ) : (
             <form onSubmit={handleContinuar} className="space-y-4 text-left">

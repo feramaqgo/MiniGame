@@ -12,4 +12,7 @@ export interface ArcadeSession {
   name: string | null;
   email: string | null;
   picture: string | null;
+  /** Sessão de demonstração (botão demo) — pula o login real e faz a roleta
+   * simular o giro, sem tocar no servidor. Só pra testar/mostrar o fluxo. */
+  demo?: boolean;
 }

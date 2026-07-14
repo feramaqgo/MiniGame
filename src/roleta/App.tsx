@@ -90,8 +90,11 @@ export default function App() {
     setEtapa("girando");
   };
 
+  // Em modo teste (?teste=1) ou sessão demo, o giro é simulado no navegador.
+  const modoSimulado = testMode || !!session?.demo;
+
   const handleResgatar = async () => {
-    if (testMode) {
+    if (modoSimulado) {
       girarTeste();
       return;
     }
@@ -147,7 +150,9 @@ export default function App() {
           />
         );
       case "resultado":
-        return <ResultadoScreen prize={prizeGanho} testMode={testMode} onTestAgain={girarTeste} />;
+        return (
+          <ResultadoScreen prize={prizeGanho} testMode={modoSimulado} onTestAgain={girarTeste} />
+        );
       case "ja_participou":
         return <JaParticipouScreen />;
       case "esgotado":
@@ -182,9 +187,9 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-transparent text-[#1A1208] relative">
-      {testMode && (
+      {modoSimulado && (
         <div className="fixed top-3 left-1/2 -translate-x-1/2 z-50 bg-amber-500 text-black text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full shadow-lg pointer-events-none">
-          ● Modo teste — nada é salvo
+          ● {session?.demo ? "Modo demo" : "Modo teste"} — nada é salvo
         </div>
       )}
       <main className="flex-1 flex flex-col relative z-10" id="roleta-viewport">
