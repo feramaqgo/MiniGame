@@ -32,7 +32,7 @@ const jogos = [
     descricao: "Guie o mangote, cresça e ganhe seu prêmio.",
     href: "/cobrinha",
     icon: Cable,
-    disponivel: false,
+    disponivel: true,
   },
   {
     titulo: "Jogo da Velha",
