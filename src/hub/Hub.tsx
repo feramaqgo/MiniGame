@@ -39,7 +39,7 @@ const jogos = [
     descricao: "Vença a máquina e concorra a um prêmio.",
     href: "/velha",
     icon: Grid3x3,
-    disponivel: false,
+    disponivel: true,
   },
 ];
 
