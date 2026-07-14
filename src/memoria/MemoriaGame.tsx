@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Wrench, Hammer, HardHat, Cog, Truck, Ruler, Trophy, RotateCcw, type LucideIcon } from "lucide-react";
+import { Trophy, RotateCcw } from "lucide-react";
 
 interface MemoriaGameProps {
   onWin: () => void;
@@ -8,21 +8,21 @@ interface MemoriaGameProps {
 interface Carta {
   id: number;
   chave: string;
-  Icon: LucideIcon;
+  src: string;
 }
 
-const PARES: { chave: string; Icon: LucideIcon }[] = [
-  { chave: "wrench", Icon: Wrench },
-  { chave: "hammer", Icon: Hammer },
-  { chave: "hardhat", Icon: HardHat },
-  { chave: "cog", Icon: Cog },
-  { chave: "truck", Icon: Truck },
-  { chave: "ruler", Icon: Ruler },
+const PARES: { chave: string; src: string }[] = [
+  { chave: "eq1", src: "/memoria-1.jpg" },
+  { chave: "eq2", src: "/memoria-2.jpg" },
+  { chave: "eq3", src: "/memoria-3.jpg" },
+  { chave: "eq4", src: "/memoria-4.jpg" },
+  { chave: "eq5", src: "/memoria-5.jpg" },
+  { chave: "eq6", src: "/memoria-6.jpg" },
 ];
 
 function embaralhar(): Carta[] {
   const dobradas = PARES.flatMap((p) => [p, p]);
-  const cartas = dobradas.map((p, i) => ({ id: i, chave: p.chave, Icon: p.Icon }));
+  const cartas = dobradas.map((p, i) => ({ id: i, chave: p.chave, src: p.src }));
   for (let i = cartas.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [cartas[i], cartas[j]] = [cartas[j], cartas[i]];
@@ -97,7 +97,6 @@ export default function MemoriaGame({ onWin }: MemoriaGameProps) {
           {cartas.map((carta, i) => {
             const faceUp = viradas.includes(i) || encontradas.has(carta.chave);
             const isMatched = encontradas.has(carta.chave);
-            const Icon = carta.Icon;
             return (
               <button
                 key={carta.id}
@@ -116,15 +115,14 @@ export default function MemoriaGame({ onWin }: MemoriaGameProps) {
                       <polygon points="50,30 62,40 57,56 43,56 38,40" fill="white" opacity="0.9" />
                     </svg>
                   </div>
-                  {/* Frente (ícone) */}
+                  {/* Frente (foto do equipamento) */}
                   <div
-                    className={`absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-2xl flex items-center justify-center shadow-lg border-2 ${
-                      isMatched
-                        ? "bg-emerald-50 border-emerald-400"
-                        : "bg-[#FFFAF0] border-black/10"
+                    className={`absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-2xl overflow-hidden shadow-lg border-2 ${
+                      isMatched ? "border-emerald-400" : "border-black/10"
                     }`}
                   >
-                    <Icon className={`w-10 h-10 ${isMatched ? "text-emerald-600" : "text-[#FF6801]"}`} />
+                    <img src={carta.src} alt="" className="w-full h-full object-cover" />
+                    {isMatched && <div className="absolute inset-0 bg-emerald-400/25" />}
                   </div>
                 </div>
               </button>
