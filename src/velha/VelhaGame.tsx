@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Trophy, RotateCcw } from "lucide-react";
+import { sfx } from "../shared/lib/sfx";
 
 type Marca = "X" | "O" | null;
 type Estado = "jogando" | "venceu" | "perdeu" | "empate";
@@ -88,6 +89,7 @@ export default function VelhaGame({ onWin }: VelhaGameProps) {
   const jogar = (i: number) => {
     if (estado !== "jogando" || pensando || board[i]) return;
 
+    sfx.click();
     const apos = [...board];
     apos[i] = "X";
     setBoard(apos);
@@ -108,8 +110,11 @@ export default function VelhaGame({ onWin }: VelhaGameProps) {
 
   useEffect(() => {
     if (estado === "venceu") {
+      sfx.vitoria();
       const t = setTimeout(onWin, 1500);
       return () => clearTimeout(t);
+    } else if (estado === "perdeu" || estado === "empate") {
+      sfx.erro();
     }
   }, [estado, onWin]);
 

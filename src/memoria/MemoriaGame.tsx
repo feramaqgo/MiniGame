@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Trophy, RotateCcw } from "lucide-react";
+import { sfx } from "../shared/lib/sfx";
 
 interface MemoriaGameProps {
   onWin: () => void;
@@ -53,6 +54,7 @@ export default function MemoriaGame({ onWin }: MemoriaGameProps) {
     if (encontradas.has(cartas[indice].chave)) return;
 
     const novasViradas = [...viradas, indice];
+    sfx.flip();
 
     if (novasViradas.length < 2) {
       setViradas(novasViradas);
@@ -65,6 +67,7 @@ export default function MemoriaGame({ onWin }: MemoriaGameProps) {
     const [a, b] = novasViradas;
 
     if (cartas[a].chave === cartas[b].chave) {
+      sfx.match();
       setEncontradas((prev) => new Set(prev).add(cartas[a].chave));
       setViradas([]);
     } else {
@@ -78,6 +81,7 @@ export default function MemoriaGame({ onWin }: MemoriaGameProps) {
 
   useEffect(() => {
     if (venceu) {
+      sfx.vitoria();
       const t = setTimeout(onWin, 1400);
       return () => clearTimeout(t);
     }

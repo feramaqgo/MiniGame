@@ -4,6 +4,7 @@ import { formatarWhatsApp, validarWhatsApp } from "../shared/lib/validation";
 import { renderGoogleButton, decodeGooglePayload } from "../shared/lib/googleIdentity";
 import { getSession, saveSession } from "../shared/lib/session";
 import { ArcadeSession } from "../shared/types";
+import { sfx } from "../shared/lib/sfx";
 
 interface GoogleStep {
   idToken: string;
@@ -72,6 +73,7 @@ export default function Hub() {
       return;
     }
 
+    sfx.click();
     const novaSessao: ArcadeSession = {
       idToken: googleData.idToken,
       celular,
@@ -103,8 +105,9 @@ export default function Hub() {
   if (!session) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center py-12 px-4 relative overflow-hidden">
-        <div className="max-w-md w-full bg-[#FFFAF0]/90 border border-black/5 rounded-3xl p-6 md:p-8 shadow-2xl text-center space-y-6 relative z-10">
-          <div className="inline-flex items-center gap-2 bg-[#FF6801] text-black px-4 py-1.5 rounded-full font-display text-xs font-bold uppercase tracking-wider mx-auto">
+        <div className="max-w-md w-full card-arcade rounded-3xl p-6 md:p-8 pt-8 text-center space-y-6 relative z-10 overflow-hidden">
+          <div className="faixa-perigo absolute top-0 inset-x-0 h-2.5" />
+          <div className="inline-flex items-center gap-2 bg-[#FF6801] text-white px-4 py-1.5 rounded-full font-display text-xs font-bold uppercase tracking-wider mx-auto">
             Arcade Feramaq · Concreteshow
           </div>
 
@@ -122,7 +125,10 @@ export default function Hub() {
               </div>
 
               <button
-                onClick={entrarDemo}
+                onClick={() => {
+                  sfx.click();
+                  entrarDemo();
+                }}
                 className="w-full border-2 border-amber-500 text-amber-700 hover:bg-amber-500/10 font-display text-sm uppercase tracking-widest px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
               >
                 <Play className="w-4 h-4" />
@@ -181,13 +187,14 @@ export default function Hub() {
     <div className="min-h-screen flex flex-col items-center justify-center py-12 px-4 relative overflow-hidden">
       <div className="max-w-2xl w-full space-y-8 relative z-10">
         <div className="text-center space-y-3">
-          <div className="inline-flex items-center gap-2 bg-[#FF6801] text-black px-4 py-1.5 rounded-full font-display text-xs font-bold uppercase tracking-wider">
+          <div className="inline-flex items-center gap-2 bg-[#FF6801] text-white px-4 py-1.5 rounded-full font-display text-xs font-bold uppercase tracking-wider">
             Olá, {session.name?.split(" ")[0] || "visitante"}!
           </div>
-          <h1 className="font-display text-4xl md:text-5xl uppercase tracking-tight font-bold text-[#1A1208]">
+          <h1 className="font-display text-4xl md:text-5xl uppercase tracking-tight font-bold text-[#23201B]">
             Escolha seu jogo
           </h1>
-          <p className="font-sans text-sm text-[#6B6048]">
+          <div className="faixa-perigo h-2 w-28 mx-auto rounded-full" />
+          <p className="font-sans text-sm text-[#6E675C]">
             Ganhe qualquer jogo abaixo e concorra a um prêmio na roleta.
           </p>
         </div>
@@ -197,20 +204,21 @@ export default function Hub() {
             const Icon = jogo.icon;
             const conteudo = (
               <>
-                <div className="w-12 h-12 rounded-xl bg-[#FF6801]/10 flex items-center justify-center">
+                <div className="faixa-perigo absolute top-0 inset-x-0 h-1.5" />
+                <div className="w-12 h-12 rounded-xl bg-[#FF6801]/12 flex items-center justify-center">
                   <Icon className="w-6 h-6 text-[#FF6801]" />
                 </div>
                 <div className="flex-1 space-y-1.5">
-                  <h2 className="font-display text-xl uppercase tracking-tight font-bold text-[#1A1208] flex items-center gap-2">
+                  <h2 className="font-display text-xl uppercase tracking-tight font-bold text-[#23201B] flex items-center gap-2">
                     {jogo.titulo}
                     {!jogo.disponivel && (
-                      <span className="inline-flex items-center gap-1 bg-black/5 text-[#857a5e] text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">
+                      <span className="inline-flex items-center gap-1 bg-black/5 text-[#8A8375] text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">
                         <Lock className="w-2.5 h-2.5" />
                         Em breve
                       </span>
                     )}
                   </h2>
-                  <p className="font-sans text-sm text-[#4A4030] leading-relaxed">{jogo.descricao}</p>
+                  <p className="font-sans text-sm text-[#4A4438] leading-relaxed">{jogo.descricao}</p>
                 </div>
                 {jogo.disponivel && (
                   <span className="inline-flex items-center gap-2 font-display text-sm uppercase tracking-widest text-[#FF6801] font-bold">
@@ -225,7 +233,7 @@ export default function Hub() {
               return (
                 <div
                   key={jogo.href}
-                  className="opacity-60 bg-[#FFFAF0]/60 border border-black/5 rounded-2xl p-6 shadow-md flex flex-col gap-4 cursor-not-allowed"
+                  className="relative overflow-hidden opacity-60 card-arcade rounded-2xl p-6 pt-7 flex flex-col gap-4 cursor-not-allowed"
                 >
                   {conteudo}
                 </div>
@@ -236,7 +244,8 @@ export default function Hub() {
               <a
                 key={jogo.href}
                 href={jogo.href}
-                className="group bg-[#FFFAF0]/90 border border-black/5 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] flex flex-col gap-4"
+                onClick={() => sfx.click()}
+                className="group relative overflow-hidden card-arcade rounded-2xl p-6 pt-7 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_50px_-20px_rgba(43,38,33,0.5)] flex flex-col gap-4"
               >
                 {conteudo}
               </a>

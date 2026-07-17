@@ -1,0 +1,71 @@
+/* ============================================================
+   Sistema visual compartilhado do arcade Feramaq — "concreto claro"
+   Importado por cada index.css das páginas (depois do tailwind).
+   ============================================================ */
+
+:root {
+  --orange: #FF6801;
+  --orange-deep: #C24E00;
+  --amarelo: #F4B21C;
+  --cimento: #E7E1D5;
+  --cimento-claro: #F4F0E8;
+  --cimento-escuro: #C7C0B1;
+  --grafite: #2B2621;
+  --ink: #23201B;
+  --ink-muted: #6E675C;
+}
+
+body {
+  font-family: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
+  color: var(--ink);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-color: var(--cimento);
+  background-image:
+    radial-gradient(circle at 50% -6%, rgba(255, 104, 1, 0.14), rgba(231, 225, 213, 0) 48%),
+    radial-gradient(circle at 90% 110%, rgba(244, 178, 28, 0.10), rgba(231, 225, 213, 0) 42%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.16'/%3E%3C/svg%3E");
+  background-repeat: no-repeat, no-repeat, repeat;
+}
+
+/* Faixa de perigo (listras de canteiro laranja/grafite) */
+.faixa-perigo {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--orange) 0 16px,
+    #201c18 16px 32px
+  );
+}
+
+/* Cartão padrão do arcade — cimento claro com relevo suave */
+.card-arcade {
+  background: linear-gradient(180deg, rgba(255, 253, 249, 0.96), rgba(246, 242, 234, 0.94));
+  border: 1px solid rgba(43, 38, 33, 0.08);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset, 0 18px 40px -18px rgba(43, 38, 33, 0.35);
+  backdrop-filter: blur(6px);
+}
+
+.glow-laranja {
+  box-shadow: 0 0 22px rgba(255, 104, 1, 0.4);
+}
+
+.glow-text-orange {
+  text-shadow: 0 0 8px rgba(255, 104, 1, 0.5);
+}
+
+/* Botão laranja padrão */
+.btn-laranja {
+  background: linear-gradient(180deg, #ff7a1c, #f15d00);
+  color: #fff;
+  box-shadow: 0 8px 20px -8px rgba(255, 104, 1, 0.7), 0 1px 0 rgba(255, 255, 255, 0.35) inset;
+  transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
+}
+.btn-laranja:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+.btn-laranja:active {
+  transform: translateY(0) scale(0.98);
+}
