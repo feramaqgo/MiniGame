@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { ArrowRight, Cable, Hand, Keyboard } from "lucide-react";
 import MangoteGame from "./MangoteGame";
 import { requireSession } from "../shared/lib/session";
+import { sfx } from "../shared/lib/sfx";
 
 export default function App() {
   const [sessionChecked, setSessionChecked] = useState(false);
@@ -21,49 +22,53 @@ export default function App() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="w-full max-w-md bg-[#FFFAF0]/90 border border-black/5 rounded-3xl p-6 md:p-8 shadow-2xl text-center space-y-6"
+          className="w-full max-w-md card-arcade rounded-3xl p-6 md:p-8 pt-8 text-center space-y-6 relative overflow-hidden"
         >
-          <div className="inline-flex items-center gap-2 bg-[#FF6801] text-black px-4 py-1.5 rounded-full font-display text-xs font-bold uppercase tracking-wider mx-auto">
+          <div className="faixa-perigo absolute top-0 inset-x-0 h-2.5" />
+          <div className="inline-flex items-center gap-2 bg-[#FF6801] text-white px-4 py-1.5 rounded-full font-display text-xs font-bold uppercase tracking-wider mx-auto">
             <Cable className="w-3.5 h-3.5" />
             <span>Mangote de Concreto</span>
           </div>
 
-          <h1 className="font-display text-3xl md:text-4xl uppercase leading-tight tracking-tight font-bold text-[#1A1208]">
+          <h1 className="font-display text-3xl md:text-4xl uppercase leading-tight tracking-tight font-bold text-[#23201B]">
             Guie o mangote <span className="text-[#FF6801]">e cresça</span>
           </h1>
 
-          <p className="font-sans text-sm text-[#4A4030] leading-relaxed">
+          <p className="font-sans text-sm text-[#4A4438] leading-relaxed">
             Conduza o mangote pelas porções de concreto. Cada porção faz ele crescer. Bombeie
-            <strong> 8 porções</strong> sem bater nas paredes nem em você mesmo pra ganhar a chance de
+            <strong> 6 porções</strong> sem bater nas paredes nem em você mesmo pra ganhar a chance de
             girar a roleta de prêmios.
           </p>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-black/[0.03] border border-black/5 rounded-xl p-4 flex flex-col items-center gap-2">
+            <div className="bg-black/[0.04] border border-black/5 rounded-xl p-4 flex flex-col items-center gap-2">
               <Hand className="w-6 h-6 text-[#FF6801]" />
-              <span className="font-display text-xs text-[#1A1208] uppercase tracking-wider">Celular</span>
-              <span className="text-[11px] text-[#6B6048] font-sans text-center leading-tight">
+              <span className="font-display text-xs text-[#23201B] uppercase tracking-wider">Celular</span>
+              <span className="text-[11px] text-[#6E675C] font-sans text-center leading-tight">
                 Deslize ou use as setas
               </span>
             </div>
-            <div className="bg-black/[0.03] border border-black/5 rounded-xl p-4 flex flex-col items-center gap-2">
+            <div className="bg-black/[0.04] border border-black/5 rounded-xl p-4 flex flex-col items-center gap-2">
               <Keyboard className="w-6 h-6 text-[#FF6801]" />
-              <span className="font-display text-xs text-[#1A1208] uppercase tracking-wider">Teclado</span>
-              <span className="text-[11px] text-[#6B6048] font-sans text-center leading-tight">
+              <span className="font-display text-xs text-[#23201B] uppercase tracking-wider">Teclado</span>
+              <span className="text-[11px] text-[#6E675C] font-sans text-center leading-tight">
                 Setas ou W A S D
               </span>
             </div>
           </div>
 
           <button
-            onClick={() => setEtapa("jogando")}
-            className="w-full bg-[#FF6801] hover:bg-[#e05c01] text-white font-display text-lg md:text-xl uppercase tracking-widest px-8 py-4 rounded-xl flex items-center justify-center gap-3 transition-all duration-300 cursor-pointer btn-glow hover:scale-[1.02] active:scale-[0.98]"
+            onClick={() => {
+              sfx.click();
+              setEtapa("jogando");
+            }}
+            className="btn-laranja w-full font-display text-lg md:text-xl uppercase tracking-widest px-8 py-4 rounded-xl flex items-center justify-center gap-3 cursor-pointer"
           >
             <span>Começar</span>
             <ArrowRight className="w-5 h-5" />
           </button>
 
-          <p className="text-xs text-[#6B6048] uppercase tracking-widest font-sans">
+          <p className="text-xs text-[#6E675C] uppercase tracking-widest font-sans">
             Perdeu? É só tentar de novo, sem limite
           </p>
         </motion.div>

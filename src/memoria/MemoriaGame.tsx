@@ -91,8 +91,8 @@ export default function MemoriaGame({ onWin }: MemoriaGameProps) {
     <div className="w-full max-w-md mx-auto flex flex-col items-center gap-4">
       {/* HUD */}
       <div className="w-full flex items-center justify-between px-1">
-        <span className="font-display text-sm uppercase tracking-widest text-[#6B6048]">Movimentos</span>
-        <span className="font-display text-lg font-bold text-[#1A1208]">{movimentos}</span>
+        <span className="font-display text-sm uppercase tracking-widest text-[#6E675C]">Movimentos</span>
+        <span className="font-display text-lg font-bold text-[#23201B]">{movimentos}</span>
       </div>
 
       {/* Tabuleiro */}
@@ -112,12 +112,13 @@ export default function MemoriaGame({ onWin }: MemoriaGameProps) {
                   className="relative w-full h-full transition-transform duration-300 [transform-style:preserve-3d]"
                   style={{ transform: faceUp ? "rotateY(180deg)" : "rotateY(0deg)" }}
                 >
-                  {/* Verso */}
-                  <div className="absolute inset-0 [backface-visibility:hidden] rounded-2xl bg-[#FF6801] shadow-lg flex items-center justify-center">
-                    <svg viewBox="0 0 100 100" className="w-8 h-8 fill-white/90">
-                      <circle cx="50" cy="50" r="46" fill="none" stroke="white" strokeWidth="4" opacity="0.5" />
-                      <polygon points="50,30 62,40 57,56 43,56 38,40" fill="white" opacity="0.9" />
+                  {/* Verso — plaquinha de equipamento com faixa de perigo */}
+                  <div className="absolute inset-0 [backface-visibility:hidden] rounded-2xl overflow-hidden shadow-lg border border-black/10 bg-gradient-to-br from-[#ff7a1c] to-[#ef5c00] flex items-center justify-center">
+                    <svg viewBox="0 0 100 100" className="w-9 h-9">
+                      <circle cx="50" cy="50" r="30" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="5" />
+                      <path d="M50 30 L61 42 L56 58 L44 58 L39 42 Z" fill="rgba(255,255,255,0.92)" />
                     </svg>
+                    <div className="faixa-perigo absolute bottom-0 inset-x-0 h-2 opacity-90" />
                   </div>
                   {/* Frente (foto do equipamento) */}
                   <div
@@ -136,8 +137,8 @@ export default function MemoriaGame({ onWin }: MemoriaGameProps) {
 
         {venceu && (
           <div className="absolute inset-0 -m-2 bg-black/60 rounded-3xl flex flex-col items-center justify-center gap-3 text-center p-6">
-            <Trophy className="w-14 h-14 text-[#F5C518] animate-bounce" />
-            <p className="font-display text-3xl text-[#F5C518] uppercase tracking-wider glow-text-orange">
+            <Trophy className="w-14 h-14 text-[#F4B21C] animate-bounce" />
+            <p className="font-display text-3xl text-[#F4B21C] uppercase tracking-wider glow-text-orange">
               Você venceu!
             </p>
             <p className="text-sm text-white/80 font-sans">Preparando sua roleta de prêmios...</p>
@@ -146,12 +147,15 @@ export default function MemoriaGame({ onWin }: MemoriaGameProps) {
       </div>
 
       <div className="flex items-center justify-between w-full px-1">
-        <span className="text-xs text-[#6B6048] font-sans">
+        <span className="text-xs text-[#6E675C] font-sans">
           {encontradas.size} / {PARES.length} pares
         </span>
         <button
-          onClick={reiniciar}
-          className="flex items-center gap-1.5 text-xs uppercase tracking-widest font-display text-[#6B6048] hover:text-[#FF6801] transition-colors cursor-pointer"
+          onClick={() => {
+            sfx.click();
+            reiniciar();
+          }}
+          className="flex items-center gap-1.5 text-xs uppercase tracking-widest font-display text-[#6E675C] hover:text-[#FF6801] transition-colors cursor-pointer"
         >
           <RotateCcw className="w-3.5 h-3.5" />
           Embaralhar

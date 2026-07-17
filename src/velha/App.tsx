@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { ArrowRight, Grid3x3 } from "lucide-react";
 import VelhaGame from "./VelhaGame";
 import { requireSession } from "../shared/lib/session";
+import { sfx } from "../shared/lib/sfx";
 
 export default function App() {
   const [sessionChecked, setSessionChecked] = useState(false);
@@ -21,26 +22,30 @@ export default function App() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="w-full max-w-md bg-[#FFFAF0]/90 border border-black/5 rounded-3xl p-6 md:p-8 shadow-2xl text-center space-y-6"
+          className="w-full max-w-md card-arcade rounded-3xl p-6 md:p-8 pt-8 text-center space-y-6 relative overflow-hidden"
         >
-          <div className="inline-flex items-center gap-2 bg-[#FF6801] text-black px-4 py-1.5 rounded-full font-display text-xs font-bold uppercase tracking-wider mx-auto">
+          <div className="faixa-perigo absolute top-0 inset-x-0 h-2.5" />
+          <div className="inline-flex items-center gap-2 bg-[#FF6801] text-white px-4 py-1.5 rounded-full font-display text-xs font-bold uppercase tracking-wider mx-auto">
             <Grid3x3 className="w-3.5 h-3.5" />
             <span>Jogo da Velha</span>
           </div>
 
-          <h1 className="font-display text-3xl md:text-4xl uppercase leading-tight tracking-tight font-bold text-[#1A1208]">
+          <h1 className="font-display text-3xl md:text-4xl uppercase leading-tight tracking-tight font-bold text-[#23201B]">
             Vença <span className="text-[#FF6801]">a máquina</span>
           </h1>
 
-          <p className="font-sans text-sm text-[#4A4030] leading-relaxed">
+          <p className="font-sans text-sm text-[#4A4438] leading-relaxed">
             Você é o <strong>X</strong> e começa jogando. Faça uma linha de três antes da máquina
             pra ganhar a chance de girar a roleta de prêmios. Empatou ou perdeu? É só jogar de novo,
             sem limite.
           </p>
 
           <button
-            onClick={() => setEtapa("jogando")}
-            className="w-full bg-[#FF6801] hover:bg-[#e05c01] text-white font-display text-lg md:text-xl uppercase tracking-widest px-8 py-4 rounded-xl flex items-center justify-center gap-3 transition-all duration-300 cursor-pointer btn-glow hover:scale-[1.02] active:scale-[0.98]"
+            onClick={() => {
+              sfx.click();
+              setEtapa("jogando");
+            }}
+            className="btn-laranja w-full font-display text-lg md:text-xl uppercase tracking-widest px-8 py-4 rounded-xl flex items-center justify-center gap-3 cursor-pointer"
           >
             <span>Começar</span>
             <ArrowRight className="w-5 h-5" />

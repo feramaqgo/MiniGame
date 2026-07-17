@@ -126,7 +126,7 @@ export default function VelhaGame({ onWin }: VelhaGameProps) {
     <div className="w-full max-w-sm mx-auto flex flex-col items-center gap-5">
       {/* HUD */}
       <div className="w-full flex items-center justify-center">
-        <span className="font-display text-sm uppercase tracking-widest text-[#6B6048]">
+        <span className="font-display text-sm uppercase tracking-widest text-[#6E675C]">
           {estado === "jogando"
             ? pensando
               ? "Máquina jogando..."
@@ -135,42 +135,44 @@ export default function VelhaGame({ onWin }: VelhaGameProps) {
         </span>
       </div>
 
-      {/* Tabuleiro */}
-      <div className="relative w-full max-w-[320px] aspect-square">
-        <div className="grid grid-cols-3 gap-2.5 w-full h-full">
-          {board.map((marca, i) => {
-            const naLinha = linhaVit?.includes(i);
-            return (
-              <button
-                key={i}
-                onClick={() => jogar(i)}
-                disabled={estado !== "jogando" || pensando || !!marca}
-                className={`rounded-2xl border-2 flex items-center justify-center transition-colors ${
-                  naLinha ? "bg-emerald-50 border-emerald-400" : "bg-[#FFFAF0] border-black/10"
-                } ${!marca && estado === "jogando" && !pensando ? "hover:border-[#FF6801] cursor-pointer" : ""}`}
-              >
-                {marca === "X" && (
-                  <svg viewBox="0 0 100 100" className="w-3/5 h-3/5">
-                    <line x1="22" y1="22" x2="78" y2="78" stroke="#FF6801" strokeWidth="14" strokeLinecap="round" />
-                    <line x1="78" y1="22" x2="22" y2="78" stroke="#FF6801" strokeWidth="14" strokeLinecap="round" />
-                  </svg>
-                )}
-                {marca === "O" && (
-                  <svg viewBox="0 0 100 100" className="w-3/5 h-3/5">
-                    <circle cx="50" cy="50" r="30" fill="none" stroke="#3A322E" strokeWidth="14" />
-                  </svg>
-                )}
-              </button>
-            );
-          })}
+      {/* Tabuleiro — laje de concreto com moldura de canteiro */}
+      <div className="relative w-full max-w-[330px] aspect-square rounded-2xl p-1.5 shadow-xl faixa-perigo">
+        <div className="relative w-full h-full rounded-xl overflow-hidden border-2 border-[#1B1712] bg-[#241F1A] p-2.5">
+          <div className="grid grid-cols-3 gap-2.5 w-full h-full">
+            {board.map((marca, i) => {
+              const naLinha = linhaVit?.includes(i);
+              return (
+                <button
+                  key={i}
+                  onClick={() => jogar(i)}
+                  disabled={estado !== "jogando" || pensando || !!marca}
+                  className={`rounded-xl border flex items-center justify-center transition-colors ${
+                    naLinha ? "bg-emerald-500/25 border-emerald-400" : "bg-[#3A342D] border-black/40"
+                  } ${!marca && estado === "jogando" && !pensando ? "hover:border-[#FF6801] cursor-pointer" : ""}`}
+                >
+                  {marca === "X" && (
+                    <svg viewBox="0 0 100 100" className="w-3/5 h-3/5 drop-shadow-[0_2px_3px_rgba(0,0,0,0.4)]">
+                      <line x1="22" y1="22" x2="78" y2="78" stroke="#FF6801" strokeWidth="15" strokeLinecap="round" />
+                      <line x1="78" y1="22" x2="22" y2="78" stroke="#FF6801" strokeWidth="15" strokeLinecap="round" />
+                    </svg>
+                  )}
+                  {marca === "O" && (
+                    <svg viewBox="0 0 100 100" className="w-3/5 h-3/5 drop-shadow-[0_2px_3px_rgba(0,0,0,0.4)]">
+                      <circle cx="50" cy="50" r="30" fill="none" stroke="#E7E1D5" strokeWidth="15" />
+                    </svg>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {estado !== "jogando" && (
-          <div className="absolute inset-0 -m-2 bg-black/60 rounded-3xl flex flex-col items-center justify-center gap-3 text-center p-6">
+          <div className="absolute inset-0 bg-black/65 rounded-2xl flex flex-col items-center justify-center gap-3 text-center p-6">
             {estado === "venceu" ? (
               <>
-                <Trophy className="w-14 h-14 text-[#F5C518] animate-bounce" />
-                <p className="font-display text-3xl text-[#F5C518] uppercase tracking-wider glow-text-orange">
+                <Trophy className="w-14 h-14 text-[#F4B21C] animate-bounce" />
+                <p className="font-display text-3xl text-[#F4B21C] uppercase tracking-wider glow-text-orange">
                   Você venceu!
                 </p>
                 <p className="text-sm text-white/80 font-sans">Preparando sua roleta de prêmios...</p>
@@ -184,8 +186,11 @@ export default function VelhaGame({ onWin }: VelhaGameProps) {
                   Tente de novo — dá pra ganhar da máquina!
                 </p>
                 <button
-                  onClick={reiniciar}
-                  className="border-2 border-[#FF6801] bg-[#FF6801] text-white font-display text-base uppercase tracking-widest px-6 py-3 rounded-xl flex items-center gap-2 hover:bg-[#e05c01] transition-colors cursor-pointer"
+                  onClick={() => {
+                    sfx.click();
+                    reiniciar();
+                  }}
+                  className="btn-laranja font-display text-base uppercase tracking-widest px-6 py-3 rounded-xl flex items-center gap-2 cursor-pointer"
                 >
                   <RotateCcw className="w-4 h-4" />
                   Jogar de novo
@@ -198,8 +203,11 @@ export default function VelhaGame({ onWin }: VelhaGameProps) {
 
       {estado === "jogando" && (
         <button
-          onClick={reiniciar}
-          className="flex items-center gap-1.5 text-xs uppercase tracking-widest font-display text-[#6B6048] hover:text-[#FF6801] transition-colors cursor-pointer"
+          onClick={() => {
+            sfx.click();
+            reiniciar();
+          }}
+          className="flex items-center gap-1.5 text-xs uppercase tracking-widest font-display text-[#6E675C] hover:text-[#FF6801] transition-colors cursor-pointer"
         >
           <RotateCcw className="w-3.5 h-3.5" />
           Reiniciar
