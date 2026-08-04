@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { motion } from "motion/react";
 import { Gift, Play, Sparkles } from "lucide-react";
 import RoletaWheel from "./RoletaWheel";
@@ -21,8 +22,26 @@ export default function ResgatarScreen({
   testMode,
   onTest,
 }: ResgatarScreenProps) {
+  // Qualquer toque, clique ou deslize na tela dispara o giro — no tablet as
+  // pessoas tocam/arrastam a roleta por instinto. A trava garante um disparo
+  // só, mesmo com toque no botão (pointerdown + click) ou multi-toque.
+  const disparado = useRef(false);
+  const dispararGiro = () => {
+    if (disparado.current || isLoading) return;
+    disparado.current = true;
+    onResgatar();
+  };
+
   return (
-    <div className="w-full min-h-screen flex flex-col justify-center items-center py-12 px-4 relative overflow-hidden">
+    <div
+      className="w-full min-h-screen flex flex-col justify-center items-center py-12 px-4 relative overflow-hidden cursor-pointer touch-none select-none"
+      onPointerDown={(e) => {
+        // Em modo teste o botão próprio decide (girar sem cadastro) — não
+        // roubamos o toque dos botões pra não disparar dois fluxos.
+        if (testMode && (e.target as HTMLElement).closest("button")) return;
+        dispararGiro();
+      }}
+    >
       <VideoBackdrop src="/roleta-fundo.mp4" />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -43,12 +62,12 @@ export default function ResgatarScreen({
         <RoletaWheel prizes={prizes} targetPrizeId={null} />
 
         <button
-          onClick={onResgatar}
+          onClick={dispararGiro}
           disabled={isLoading}
           className="w-full bg-[#FF6801] hover:bg-[#e05c01] disabled:opacity-60 text-white font-display text-lg md:text-xl uppercase tracking-widest px-8 py-4 rounded-xl flex items-center justify-center gap-3 transition-all duration-300 cursor-pointer btn-glow hover:scale-[1.02] active:scale-[0.98]"
         >
           <Sparkles className="w-5 h-5" />
-          <span>{isLoading ? "Resgatando..." : "Resgatar meu prêmio"}</span>
+          <span>{isLoading ? "Resgatando..." : "Toque para girar!"}</span>
         </button>
 
         {testMode && (
@@ -62,7 +81,7 @@ export default function ResgatarScreen({
         )}
 
         <p className="text-xs text-[#6B6048] uppercase tracking-widest font-sans">
-          Um giro por pessoa · Brinde entregue na hora pelo atendente
+          Toque em qualquer lugar pra girar · Um giro por pessoa · Brinde na hora
         </p>
       </motion.div>
     </div>
