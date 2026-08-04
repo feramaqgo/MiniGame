@@ -53,13 +53,24 @@ export default function ResultadoScreen({
       >
         <PartyPopper className="w-14 h-14 text-[#B8860B] mx-auto animate-bounce" />
 
-        <h2 className="font-display text-3xl md:text-4xl uppercase tracking-wider font-bold text-[#8A6500]">
+        <h2 className="font-display text-2xl md:text-3xl uppercase tracking-wider font-bold text-[#8A6500]">
           Parabéns!
         </h2>
 
-        <p className="font-display text-xl md:text-2xl text-[#1A1208] uppercase tracking-wide">
-          Você ganhou: <span className="text-[#FF6801]">{prize?.name ?? "seu brinde"}</span>
-        </p>
+        {/* O prêmio é o protagonista — o atendente lê isso de longe */}
+        <div className="space-y-1.5">
+          <p className="font-sans text-[11px] uppercase tracking-[0.2em] text-[#857a5e]">
+            Você ganhou
+          </p>
+          <motion.p
+            initial={{ scale: 0.7, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.15, type: "spring", stiffness: 220, damping: 14 }}
+            className="font-display text-3xl md:text-5xl leading-tight uppercase font-bold text-[#FF6801] [text-shadow:0_2px_16px_rgba(255,104,1,0.35)]"
+          >
+            {prize?.name ?? "seu brinde"}
+          </motion.p>
+        </div>
 
         <div className="bg-[#FF6801]/10 border border-[#FF6801]/30 rounded-xl p-4">
           <p className="text-sm text-[#4A4030] font-sans leading-relaxed">
@@ -77,10 +88,19 @@ export default function ResultadoScreen({
           </button>
         )}
 
-        {onProximo && restante > 0 && (
-          <p className="text-[11px] text-[#857a5e] uppercase tracking-widest font-sans">
-            Voltando pro início em {restante}s...
-          </p>
+        {onProximo && restante > 0 && autoVoltarSegundos && (
+          <div className="space-y-1.5">
+            {/* barra que esvazia — o atendente vê quanto tempo resta na tela */}
+            <div className="h-1 w-full bg-black/10 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-[#FF6801] rounded-full transition-[width] duration-1000 ease-linear"
+                style={{ width: `${(restante / autoVoltarSegundos) * 100}%` }}
+              />
+            </div>
+            <p className="text-[11px] text-[#857a5e] uppercase tracking-widest font-sans">
+              Voltando pro início em {restante}s
+            </p>
+          </div>
         )}
 
         {testMode && onTestAgain && (

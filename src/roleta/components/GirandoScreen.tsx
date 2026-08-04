@@ -16,16 +16,42 @@ export default function GirandoScreen({ prizes, targetPrizeId, onSpinComplete }:
         animate={{ opacity: 1, scale: 1 }}
         className="w-full max-w-md text-center space-y-6"
       >
-        <h2 className="font-display text-2xl md:text-3xl uppercase tracking-tight font-bold text-[#1A1208] glow-text-orange">
-          {targetPrizeId ? "Boa sorte!" : "Preparando seu giro..."}
+        <h2 className="font-display text-3xl md:text-4xl uppercase tracking-tight font-bold text-[#1A1208]">
+          {targetPrizeId ? (
+            <span className="texto-fera">Boa sorte!</span>
+          ) : (
+            "Preparando seu giro..."
+          )}
         </h2>
 
-        <RoletaWheel prizes={prizes} targetPrizeId={targetPrizeId} onSpinComplete={onSpinComplete} />
+        {/* halo pulsante atrás da roda — dá a sensação de energia girando */}
+        <div className="relative">
+          <div className="absolute inset-0 -m-6 rounded-full bg-[#FF6801]/20 blur-3xl animate-[energia_1.6s_ease-in-out_infinite] pointer-events-none" />
+          <div className="relative">
+            <RoletaWheel prizes={prizes} targetPrizeId={targetPrizeId} onSpinComplete={onSpinComplete} />
+          </div>
+        </div>
 
-        <p className="text-sm text-[#6B6048] uppercase tracking-widest font-sans animate-pulse">
-          {targetPrizeId ? "Girando..." : "Aguarde um instante"}
-        </p>
+        <div className="flex items-center justify-center gap-2">
+          {[0, 1, 2].map((i) => (
+            <span
+              key={i}
+              className="w-2 h-2 rounded-full bg-[#FF6801] animate-bounce"
+              style={{ animationDelay: `${i * 0.15}s` }}
+            />
+          ))}
+          <p className="text-sm text-[#6B6048] uppercase tracking-widest font-sans ml-1">
+            {targetPrizeId ? "Girando" : "Aguarde"}
+          </p>
+        </div>
       </motion.div>
+
+      <style>{`
+        @keyframes energia {
+          0%, 100% { opacity: 0.5; transform: scale(0.95); }
+          50% { opacity: 0.9; transform: scale(1.05); }
+        }
+      `}</style>
     </div>
   );
 }

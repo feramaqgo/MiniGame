@@ -123,41 +123,91 @@ export default function VelhaGame({ onWin }: VelhaGameProps) {
   }, []);
 
   return (
-    <div className="w-full max-w-sm mx-auto flex flex-col items-center gap-5">
-      {/* HUD */}
+    <div className="w-full max-w-md mx-auto flex flex-col items-center gap-5 select-none">
+      {/* HUD — de quem é a vez, com a marca colorida */}
       <div className="w-full flex items-center justify-center">
-        <span className="font-display text-sm uppercase tracking-widest text-[#6E675C]">
-          {estado === "jogando"
-            ? pensando
-              ? "Máquina jogando..."
-              : "Sua vez (você é o X)"
-            : "Fim de jogo"}
-        </span>
+        {estado === "jogando" ? (
+          <div
+            className={`inline-flex items-center gap-2.5 rounded-full px-5 py-2 font-display text-sm uppercase tracking-widest transition-colors duration-300 ${
+              pensando
+                ? "bg-[#E7E1D5] text-[#6E675C]"
+                : "bg-[#FF6801] text-white shadow-[0_0_20px_-4px_rgba(255,104,1,0.8)]"
+            }`}
+          >
+            {pensando ? (
+              <>
+                <span className="flex gap-1">
+                  {[0, 1, 2].map((i) => (
+                    <span
+                      key={i}
+                      className="w-1.5 h-1.5 rounded-full bg-[#6E675C] animate-bounce"
+                      style={{ animationDelay: `${i * 0.15}s` }}
+                    />
+                  ))}
+                </span>
+                Rino pensando
+              </>
+            ) : (
+              <>
+                <svg viewBox="0 0 100 100" className="w-4 h-4">
+                  <line x1="22" y1="22" x2="78" y2="78" stroke="currentColor" strokeWidth="18" strokeLinecap="round" />
+                  <line x1="78" y1="22" x2="22" y2="78" stroke="currentColor" strokeWidth="18" strokeLinecap="round" />
+                </svg>
+                Sua vez
+              </>
+            )}
+          </div>
+        ) : (
+          <span className="font-display text-sm uppercase tracking-widest text-[#6E675C]">Fim de jogo</span>
+        )}
       </div>
 
       {/* Tabuleiro — laje de concreto com moldura de canteiro */}
-      <div className="relative w-full max-w-[330px] aspect-square rounded-2xl p-1.5 shadow-xl faixa-perigo">
+      <div className="relative w-full max-w-[400px] aspect-square rounded-2xl p-1.5 shadow-xl faixa-perigo">
         <div className="relative w-full h-full rounded-xl overflow-hidden border-2 border-[#1B1712] bg-[#241F1A] p-2.5">
           <div className="grid grid-cols-3 gap-2.5 w-full h-full">
             {board.map((marca, i) => {
               const naLinha = linhaVit?.includes(i);
+              const jogavel = !marca && estado === "jogando" && !pensando;
               return (
                 <button
                   key={i}
                   onClick={() => jogar(i)}
                   disabled={estado !== "jogando" || pensando || !!marca}
-                  className={`rounded-xl border flex items-center justify-center transition-colors ${
-                    naLinha ? "bg-emerald-500/25 border-emerald-400" : "bg-[#3A342D] border-black/40"
-                  } ${!marca && estado === "jogando" && !pensando ? "hover:border-[#FF6801] cursor-pointer" : ""}`}
+                  className={`group rounded-xl border flex items-center justify-center transition-all duration-200 ${
+                    naLinha
+                      ? "bg-emerald-500/25 border-emerald-400 shadow-[0_0_20px_-2px_rgba(16,185,129,0.7)]"
+                      : "bg-[#3A342D] border-black/40"
+                  } ${
+                    jogavel
+                      ? "hover:border-[#FF6801] hover:bg-[#443D34] active:scale-95 cursor-pointer"
+                      : ""
+                  }`}
                 >
+                  {/* prévia fantasma do X no hover — deixa claro onde vai cair */}
+                  {jogavel && (
+                    <svg
+                      viewBox="0 0 100 100"
+                      className="w-3/5 h-3/5 opacity-0 group-hover:opacity-25 transition-opacity"
+                    >
+                      <line x1="22" y1="22" x2="78" y2="78" stroke="#FF6801" strokeWidth="15" strokeLinecap="round" />
+                      <line x1="78" y1="22" x2="22" y2="78" stroke="#FF6801" strokeWidth="15" strokeLinecap="round" />
+                    </svg>
+                  )}
                   {marca === "X" && (
-                    <svg viewBox="0 0 100 100" className="w-3/5 h-3/5 drop-shadow-[0_2px_3px_rgba(0,0,0,0.4)]">
+                    <svg
+                      viewBox="0 0 100 100"
+                      className="w-3/5 h-3/5 drop-shadow-[0_2px_3px_rgba(0,0,0,0.4)] animate-[marcar_0.25s_ease-out]"
+                    >
                       <line x1="22" y1="22" x2="78" y2="78" stroke="#FF6801" strokeWidth="15" strokeLinecap="round" />
                       <line x1="78" y1="22" x2="22" y2="78" stroke="#FF6801" strokeWidth="15" strokeLinecap="round" />
                     </svg>
                   )}
                   {marca === "O" && (
-                    <svg viewBox="0 0 100 100" className="w-3/5 h-3/5 drop-shadow-[0_2px_3px_rgba(0,0,0,0.4)]">
+                    <svg
+                      viewBox="0 0 100 100"
+                      className="w-3/5 h-3/5 drop-shadow-[0_2px_3px_rgba(0,0,0,0.4)] animate-[marcar_0.25s_ease-out]"
+                    >
                       <circle cx="50" cy="50" r="30" fill="none" stroke="#E7E1D5" strokeWidth="15" />
                     </svg>
                   )}
@@ -207,12 +257,20 @@ export default function VelhaGame({ onWin }: VelhaGameProps) {
             sfx.click();
             reiniciar();
           }}
-          className="flex items-center gap-1.5 text-xs uppercase tracking-widest font-display text-[#6E675C] hover:text-[#FF6801] transition-colors cursor-pointer"
+          className="flex items-center gap-1.5 text-xs uppercase tracking-widest font-display text-[#6E675C] hover:text-[#FF6801] transition-colors cursor-pointer px-3 py-2"
         >
           <RotateCcw className="w-3.5 h-3.5" />
           Reiniciar
         </button>
       )}
+
+      <style>{`
+        @keyframes marcar {
+          0% { transform: scale(0.4); opacity: 0; }
+          70% { transform: scale(1.12); opacity: 1; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 }

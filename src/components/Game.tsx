@@ -222,7 +222,7 @@ export default function Game({ onGoal, onMiss }: GameProps) {
     <div
       ref={containerRef}
       onClick={handleKick}
-      className="relative w-full h-[400px] md:h-[450px] rounded-2xl overflow-hidden cursor-pointer select-none border border-white/40 flex flex-col justify-between shadow-2xl bg-gradient-to-b from-[#A9D18A]/30 via-[#4C8C42]/45 to-[#1F7A3D]/65 backdrop-blur-sm"
+      className="relative w-full h-[420px] md:h-[500px] rounded-2xl overflow-hidden cursor-pointer select-none border border-white/40 flex flex-col justify-between shadow-2xl bg-gradient-to-b from-[#A9D18A]/30 via-[#4C8C42]/45 to-[#1F7A3D]/65 backdrop-blur-sm"
       id="game-canvas-area"
     >
       {/* Stadium backdrop lights inside the container */}
@@ -316,12 +316,14 @@ export default function Game({ onGoal, onMiss }: GameProps) {
       {/* Target Reticle Sweeping (Moves inside the goal area) */}
       <div
         ref={reticleRef}
-        className="absolute w-10 h-10 -ml-5 -mt-5 border-2 border-[#FF6801] rounded-full flex items-center justify-center pointer-events-none z-20 shadow-[0_0_15px_#FF6801] transition-shadow duration-300"
+        className="absolute w-12 h-12 -ml-6 -mt-6 border-[3px] border-[#FF6801] rounded-full flex items-center justify-center pointer-events-none z-20 shadow-[0_0_22px_#FF6801] transition-shadow duration-300"
         style={{ left: "50%", top: "120px" }}
       >
-        <div className="w-2.5 h-2.5 bg-[#FF6801] rounded-full" />
-        <div className="absolute w-5 h-[2px] bg-[#FF6801]" />
-        <div className="absolute w-[2px] h-5 bg-[#FF6801]" />
+        {/* anel pulsante — a mira "respira" e puxa o olho */}
+        <div className="absolute inset-0 rounded-full border-2 border-[#FF6801]/70 animate-[mira_1.4s_ease-out_infinite]" />
+        <div className="w-3 h-3 bg-[#FF6801] rounded-full shadow-[0_0_10px_#FF6801]" />
+        <div className="absolute w-6 h-[2px] bg-[#FF6801]" />
+        <div className="absolute w-[2px] h-6 bg-[#FF6801]" />
       </div>
 
       {/* FIXED ORANGE BALL AT BOTTOM CENTER */}
@@ -344,12 +346,23 @@ export default function Game({ onGoal, onMiss }: GameProps) {
 
       {/* Tap/Click Instructions overlay at the bottom */}
       {gameState === "idle" && (
-        <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none z-10 animate-pulse">
-          <p className="font-display text-xs text-white uppercase tracking-widest bg-black/40 py-1.5 px-4 rounded-full inline-block">
-            Toque, clique ou aperte espaço para chutar
+        <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none z-10">
+          <p className="font-display text-xs md:text-sm text-white uppercase tracking-widest bg-black/50 backdrop-blur-sm py-2 px-5 rounded-full inline-block border border-white/15 animate-[respirar_2s_ease-in-out_infinite]">
+            Toque em qualquer lugar para chutar
           </p>
         </div>
       )}
+
+      <style>{`
+        @keyframes mira {
+          0% { transform: scale(1); opacity: 0.8; }
+          100% { transform: scale(1.9); opacity: 0; }
+        }
+        @keyframes respirar {
+          0%, 100% { transform: scale(1); opacity: 0.9; }
+          50% { transform: scale(1.04); opacity: 1; }
+        }
+      `}</style>
 
       {/* Confetti triggered on Goal */}
       {gameState === "resolved" && result === "goal" && <Confetti />}

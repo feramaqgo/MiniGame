@@ -54,9 +54,11 @@ export default function ResgatarScreen({
           <span>Você venceu!</span>
         </div>
 
-        <h1 className="font-display text-3xl md:text-4xl uppercase leading-tight tracking-tight font-bold text-[#1A1208]">
-          {nome ? `Parabéns, ${nome.split(" ")[0]}!` : "Parabéns!"}{" "}
-          <span className="text-[#FF6801]">Gire e ganhe</span>
+        <h1 className="font-display uppercase tracking-tight font-bold text-[#1A1208] leading-[1.1]">
+          <span className="block text-xl md:text-2xl text-[#6B6048]">
+            {nome ? `Parabéns, ${nome.split(" ")[0]}!` : "Parabéns!"}
+          </span>
+          <span className="block text-4xl md:text-5xl texto-fera mt-1">Gire e ganhe</span>
         </h1>
 
         <RoletaWheel prizes={prizes} targetPrizeId={null} />
