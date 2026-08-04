@@ -4,6 +4,13 @@
 > atual e o que falta. Escrito pra um agente de código (Claude Code) entender o
 > projeto do zero sem precisar reconstruir o raciocínio.
 
+> ⚠️ **BANCO OFICIAL DESDE 04/08/2026.** `roleta_participants`, `arcade_scores`
+> e o `remaining_stock` de `roleta_prizes` no Supabase de produção são **dados
+> reais da campanha**, não teste. **Nunca rodar delete/reset/restart de
+> sequência nessas tabelas sem pedido explícito do usuário na conversa atual**
+> — nem "pra testar", nem "pra limpar verificação". Primeiros participantes
+> reais: código 1 "Feramaq Vendas", código 2 "Amanda Silva" (04/08/2026 15:19 UTC).
+
 ## Visão geral
 
 Site de **jogos promocionais** da Feramaq (fabricante de equipamentos de concreto),

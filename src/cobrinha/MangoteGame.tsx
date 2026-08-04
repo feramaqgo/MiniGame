@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useRef, useState } from "react";
-import { Hand, RotateCcw, Trophy } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Hand, RotateCcw, Trophy } from "lucide-react";
 import { sfx } from "../shared/lib/sfx";
 import { registrarScore } from "../shared/lib/score";
 
@@ -23,6 +23,13 @@ export default function MangoteGame({ onWin }: MangoteGameProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [score, setScore] = useState(0);
   const [estado, setEstado] = useState<"jogando" | "perdeu" | "venceu">("jogando");
+  /**
+   * O mangote fica PARADO até o primeiro comando. Sem isso ele já sai andando
+   * e bate na parede enquanto a pessoa ainda está entendendo o controle — no
+   * estande isso queimava a primeira partida de todo mundo.
+   * Enquanto está parado, as setas de dica ficam na tela.
+   */
+  const [comecou, setComecou] = useState(false);
 
   const snakeRef = useRef<Cell[]>([]);
   const dirRef = useRef<Dir>({ x: 1, y: 0 });
@@ -216,6 +223,7 @@ export default function MangoteGame({ onWin }: MangoteGameProps) {
     nextDirRef.current = { x: 1, y: 0 };
     scoreRef.current = 0;
     setScore(0);
+    setComecou(false); // espera o primeiro toque de novo
     inicioRef.current = performance.now();
     novaComida();
     setEstado("jogando");
@@ -227,10 +235,13 @@ export default function MangoteGame({ onWin }: MangoteGameProps) {
     if (atual.x === -nx && atual.y === -ny) return;
     if (atual.x === nx && atual.y === ny) return;
     nextDirRef.current = { x: nx, y: ny };
+    // Primeiro comando destrava o mangote e tira as setas de dica.
+    setComecou(true);
   }, []);
 
   useEffect(() => {
-    if (estado !== "jogando") {
+    // Só anda depois do primeiro comando (e enquanto a partida está viva).
+    if (estado !== "jogando" || !comecou) {
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
@@ -242,7 +253,7 @@ export default function MangoteGame({ onWin }: MangoteGameProps) {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [estado, score, tick]);
+  }, [estado, comecou, score, tick]);
 
   useEffect(() => {
     if (estado === "venceu") {
@@ -345,7 +356,19 @@ export default function MangoteGame({ onWin }: MangoteGameProps) {
   };
 
   return (
-    <div className="w-full max-w-xl mx-auto flex flex-col items-center gap-4 touch-none select-none">
+    <div
+      // A área de comando é esta caixa inteira — dá pra tocar dentro OU fora
+      // do tabuleiro. Fora, a direção é lida do mesmo jeito (a conta é feita
+      // contra a posição da cabeça), então clicar na margem também funciona.
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={() => {
+        touchStart.current = null;
+        arrastou.current = false;
+      }}
+      className="w-full max-w-xl mx-auto flex flex-col items-center gap-4 touch-none select-none cursor-pointer py-2"
+    >
       {/* HUD */}
       <div className="w-full flex items-center justify-between px-1">
         <span className="font-display text-sm uppercase tracking-widest text-[#6E675C]">Concreto</span>
@@ -363,20 +386,37 @@ export default function MangoteGame({ onWin }: MangoteGameProps) {
         </div>
       </div>
 
-      {/* Tabuleiro — é a própria área de controle: tocar/deslizar aqui pilota */}
-      <div className="relative w-full max-w-[min(560px,72vh)] aspect-square rounded-2xl p-1.5 shadow-xl faixa-perigo">
+      {/* Tabuleiro — o toque é capturado pela caixa externa, então tocar
+          nas margens ao redor também comanda o mangote. */}
+      <div className="relative w-full max-w-[min(560px,68vh)] aspect-square rounded-2xl p-1.5 shadow-xl faixa-perigo">
         <div
           ref={boardRef}
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          onPointerCancel={() => {
-            touchStart.current = null;
-            arrastou.current = false;
-          }}
-          className="relative w-full h-full rounded-xl overflow-hidden border-2 border-[#1B1712] cursor-pointer"
+          className="relative w-full h-full rounded-xl overflow-hidden border-2 border-[#1B1712]"
         >
           <canvas ref={canvasRef} className="w-full h-full block pointer-events-none" />
+
+          {/* Setas de dica: mostram que cada lado da tela é tocável naquela
+              direção. Somem no primeiro comando. */}
+          {estado === "jogando" && !comecou && (
+            <div className="absolute inset-0 pointer-events-none">
+              <SetaDica classe="top-2 left-1/2 -translate-x-1/2" atraso="0s">
+                <ChevronUp className="w-8 h-8" strokeWidth={3} />
+              </SetaDica>
+              <SetaDica classe="bottom-2 left-1/2 -translate-x-1/2" atraso="0.4s">
+                <ChevronDown className="w-8 h-8" strokeWidth={3} />
+              </SetaDica>
+              <SetaDica classe="left-2 top-1/2 -translate-y-1/2" atraso="0.2s">
+                <ChevronLeft className="w-8 h-8" strokeWidth={3} />
+              </SetaDica>
+              <SetaDica classe="right-2 top-1/2 -translate-y-1/2" atraso="0.6s">
+                <ChevronRight className="w-8 h-8" strokeWidth={3} />
+              </SetaDica>
+
+              <span className="absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-10 bg-black/75 text-white font-display text-[11px] md:text-xs uppercase tracking-widest px-4 py-2.5 rounded-full whitespace-nowrap">
+                Toque de um lado pra começar
+              </span>
+            </div>
+          )}
 
           {/* Onda no ponto tocado — confirma que o toque foi lido */}
           {toque && (
@@ -430,7 +470,31 @@ export default function MangoteGame({ onWin }: MangoteGameProps) {
           0% { transform: scale(0.5); opacity: 0.9; }
           100% { transform: scale(1.7); opacity: 0; }
         }
+        @keyframes seta-dica {
+          0%, 100% { opacity: 0.45; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.18); }
+        }
       `}</style>
     </div>
+  );
+}
+
+/** Seta pulsante numa borda do tabuleiro — ensina que dá pra tocar ali. */
+function SetaDica({
+  classe,
+  atraso,
+  children,
+}: {
+  classe: string;
+  atraso: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <span
+      style={{ animationDelay: atraso }}
+      className={`absolute ${classe} w-14 h-14 rounded-full bg-[#FF6801]/25 border-2 border-[#FF6801] text-[#FFD9B8] flex items-center justify-center animate-[seta-dica_1.8s_ease-in-out_infinite]`}
+    >
+      {children}
+    </span>
   );
 }

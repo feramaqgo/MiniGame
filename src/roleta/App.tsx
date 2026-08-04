@@ -135,13 +135,7 @@ export default function App() {
           </div>
         );
       case "resultado":
-        return (
-          <ResultadoScreen
-            prize={prizeGanho}
-            onProximo={voltarProTablet}
-            autoVoltarSegundos={15}
-          />
-        );
+        return <ResultadoScreen prize={prizeGanho} onProximo={voltarProTablet} />;
       case "ja_participou":
         return <JaParticipouScreen onProximo={voltarProTablet} />;
       case "esgotado":

@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { ArrowRight, PartyPopper } from "lucide-react";
 import Confetti from "./Confetti";
@@ -7,41 +6,35 @@ import { Prize } from "../types";
 
 interface ResultadoScreenProps {
   prize: Prize | null;
-  /** Volta pro início (tela do QR) pro próximo visitante. */
+  /** Libera a tela pro próximo visitante — ação da equipe do estande. */
   onProximo?: () => void;
-  /** Segundos até voltar sozinho pro início. */
-  autoVoltarSegundos?: number;
 }
 
-export default function ResultadoScreen({
-  prize,
-  onProximo,
-  autoVoltarSegundos,
-}: ResultadoScreenProps) {
-  const [restante, setRestante] = useState(autoVoltarSegundos ?? 0);
-
-  // Contagem regressiva do tablet: mostra o prêmio, espera o atendente ver,
-  // e devolve a tela pro QR sozinha.
-  useEffect(() => {
-    if (!onProximo || !autoVoltarSegundos) return;
-    setRestante(autoVoltarSegundos);
-    const timer = window.setInterval(() => {
-      setRestante((s) => {
-        if (s <= 1) {
-          window.clearInterval(timer);
-          onProximo();
-          return 0;
-        }
-        return s - 1;
-      });
-    }, 1000);
-    return () => window.clearInterval(timer);
-  }, [onProximo, autoVoltarSegundos]);
-
+/**
+ * Tela final: mostra o prêmio até o atendente liberar.
+ *
+ * De propósito NÃO existe contagem regressiva nem botão grande no meio: o
+ * visitante precisa dessa tela como comprovante pra retirar o brinde, e um
+ * toque acidental (ou um timer estourando) faria ele perder a prova. Quem
+ * libera é a equipe, no botão discreto do canto.
+ */
+export default function ResultadoScreen({ prize, onProximo }: ResultadoScreenProps) {
   return (
     <div className="w-full min-h-screen flex flex-col justify-center items-center py-12 px-4 relative overflow-hidden">
       <VideoBackdrop src="/roleta-resultado-fundo.mp4" />
       <Confetti />
+
+      {/* Botão da equipe: pequeno, no canto, longe de onde a pessoa toca */}
+      {onProximo && (
+        <button
+          onClick={onProximo}
+          className="fixed top-3 right-3 z-[60] inline-flex items-center gap-1.5 bg-black/35 hover:bg-black/60 backdrop-blur-sm text-white/80 hover:text-white font-sans text-[10px] uppercase tracking-widest px-3 py-2 rounded-full border border-white/20 transition-colors cursor-pointer"
+        >
+          Próximo visitante
+          <ArrowRight className="w-3 h-3" />
+        </button>
+      )}
+
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -70,35 +63,9 @@ export default function ResultadoScreen({
 
         <div className="bg-[#FF6801]/10 border border-[#FF6801]/30 rounded-xl p-4">
           <p className="text-sm text-[#4A4030] font-sans leading-relaxed">
-            Chame o atendente do estande Feramaq e retire seu brinde agora mesmo.
+            Mostre esta tela ao atendente do estande Feramaq e retire seu brinde agora mesmo.
           </p>
         </div>
-
-        {onProximo && (
-          <button
-            onClick={onProximo}
-            className="w-full bg-[#1A1208] hover:bg-black text-[#F5C518] font-display text-sm uppercase tracking-widest px-6 py-3.5 rounded-xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
-          >
-            <span>Próximo visitante</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        )}
-
-        {onProximo && restante > 0 && autoVoltarSegundos && (
-          <div className="space-y-1.5">
-            {/* barra que esvazia — o atendente vê quanto tempo resta na tela */}
-            <div className="h-1 w-full bg-black/10 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-[#FF6801] rounded-full transition-[width] duration-1000 ease-linear"
-                style={{ width: `${(restante / autoVoltarSegundos) * 100}%` }}
-              />
-            </div>
-            <p className="text-[11px] text-[#857a5e] uppercase tracking-widest font-sans">
-              Voltando pro início em {restante}s
-            </p>
-          </div>
-        )}
-
       </motion.div>
     </div>
   );
