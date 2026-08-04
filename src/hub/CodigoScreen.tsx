@@ -31,10 +31,13 @@ export default function CodigoScreen({ session, onTrocarConta }: CodigoScreenPro
         {/* O código, protagonista absoluto da tela */}
         <div className="relative bg-[#1A1208] rounded-2xl py-8 px-4 overflow-hidden">
           <div className="faixa-perigo absolute top-0 inset-x-0 h-1.5 opacity-80" />
-          <p className="font-display text-[clamp(4rem,24vw,7rem)] leading-none font-bold text-[#F5C518] tabular-nums tracking-tight [text-shadow:0_0_40px_rgba(245,197,24,0.45)]">
+          <p className="relative z-10 font-display text-[clamp(4rem,24vw,7rem)] leading-none font-bold text-[#F5C518] tabular-nums tracking-tight [text-shadow:0_0_40px_rgba(245,197,24,0.45)]">
             {session.codigo ?? "—"}
           </p>
+          {/* varredura de brilho — chama o olho pro número */}
+          <div className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none animate-[varrer_3.5s_ease-in-out_infinite]" />
           <div className="faixa-perigo absolute bottom-0 inset-x-0 h-1.5 opacity-80" />
+          <style>{`@keyframes varrer { 0% { left: -35%; } 60%, 100% { left: 105%; } }`}</style>
         </div>
 
         {session.demo && (

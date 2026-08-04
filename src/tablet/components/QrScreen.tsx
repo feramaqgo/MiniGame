@@ -30,8 +30,11 @@ export default function QrScreen({ testMode, onJaEscaneei }: QrScreenProps) {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center py-8 px-6 relative overflow-hidden">
+      {/* Molduras de canteiro no topo e na base — enquadram o tablet no estande */}
+      <div className="faixa-perigo fixed top-0 inset-x-0 h-3 z-40 pointer-events-none" />
+      <div className="faixa-perigo fixed bottom-0 inset-x-0 h-3 z-40 pointer-events-none" />
       {testMode && (
-        <div className="fixed top-3 left-1/2 -translate-x-1/2 z-50 bg-amber-500 text-black text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full shadow-lg pointer-events-none">
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-amber-500 text-black text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full shadow-lg pointer-events-none">
           ● Modo teste — nada é salvo
         </div>
       )}
@@ -45,7 +48,7 @@ export default function QrScreen({ testMode, onJaEscaneei }: QrScreenProps) {
 
           <h1 className="font-display text-4xl md:text-6xl uppercase leading-[1.05] tracking-tight font-bold text-[#1A1208]">
             Jogue e<br />
-            <span className="text-[#FF6801]">ganhe brindes</span>
+            <span className="texto-fera">ganhe brindes</span>
           </h1>
 
           <div className="space-y-4">

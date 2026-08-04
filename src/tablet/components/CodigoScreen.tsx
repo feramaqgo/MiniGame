@@ -117,7 +117,7 @@ export default function CodigoScreen({
       <div className="max-w-md w-full space-y-6 relative z-10">
         <div className="text-center space-y-2">
           <h1 className="font-display text-3xl md:text-4xl uppercase tracking-tight font-bold text-[#1A1208]">
-            Insira seu <span className="text-[#FF6801]">código</span>
+            Insira seu <span className="texto-fera">código</span>
           </h1>
           <p className="font-sans text-sm text-[#6B6048]">
             O número que apareceu no seu celular depois do cadastro.

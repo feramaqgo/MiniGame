@@ -172,7 +172,7 @@ export default function Hub() {
         </div>
 
         <h1 className="font-display text-3xl md:text-4xl uppercase leading-tight tracking-tight font-bold text-[#1A1208]">
-          Entre pra <span className="text-[#FF6801]">jogar e ganhar</span>
+          Entre pra <span className="texto-fera">jogar e ganhar</span>
         </h1>
 
         {!googleData ? (

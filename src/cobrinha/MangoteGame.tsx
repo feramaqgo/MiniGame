@@ -269,19 +269,31 @@ export default function MangoteGame({ onWin }: MangoteGameProps) {
     return () => window.removeEventListener("keydown", onKey);
   }, [iniciar, mudarDirecao]);
 
+  // Swipe contínuo na tela INTEIRA do jogo: a cada ~28px de arrasto a direção
+  // muda e o ponto de referência reinicia — dá pra "pilotar" o mangote sem
+  // tirar o dedo da tela, em qualquer lugar (não só no tabuleiro).
   const touchStart = useRef<{ x: number; y: number } | null>(null);
+  const SWIPE_PASSO = 28;
+  const aplicarSwipe = (cx: number, cy: number) => {
+    if (!touchStart.current) return;
+    const dx = cx - touchStart.current.x;
+    const dy = cy - touchStart.current.y;
+    if (Math.abs(dx) < SWIPE_PASSO && Math.abs(dy) < SWIPE_PASSO) return;
+    if (Math.abs(dx) > Math.abs(dy)) mudarDirecao(dx > 0 ? 1 : -1, 0);
+    else mudarDirecao(0, dy > 0 ? 1 : -1);
+    touchStart.current = { x: cx, y: cy };
+  };
   const onTouchStart = (e: React.TouchEvent) => {
     const t = e.touches[0];
     touchStart.current = { x: t.clientX, y: t.clientY };
   };
+  const onTouchMove = (e: React.TouchEvent) => {
+    const t = e.touches[0];
+    aplicarSwipe(t.clientX, t.clientY);
+  };
   const onTouchEnd = (e: React.TouchEvent) => {
-    if (!touchStart.current) return;
     const t = e.changedTouches[0];
-    const dx = t.clientX - touchStart.current.x;
-    const dy = t.clientY - touchStart.current.y;
-    if (Math.abs(dx) < 20 && Math.abs(dy) < 20) return;
-    if (Math.abs(dx) > Math.abs(dy)) mudarDirecao(dx > 0 ? 1 : -1, 0);
-    else mudarDirecao(0, dy > 0 ? 1 : -1);
+    aplicarSwipe(t.clientX, t.clientY);
     touchStart.current = null;
   };
 
@@ -291,24 +303,33 @@ export default function MangoteGame({ onWin }: MangoteGameProps) {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto flex flex-col items-center gap-4">
+    <div
+      className="w-full max-w-md mx-auto flex flex-col items-center gap-5 touch-none select-none"
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+    >
       {/* HUD */}
       <div className="w-full flex items-center justify-between px-1">
         <span className="font-display text-sm uppercase tracking-widest text-[#6E675C]">Concreto</span>
-        <span className="font-display text-lg font-bold text-[#23201B]">
-          {score} <span className="text-[#8A8375] text-sm">/ {ALVO}</span>
-        </span>
+        <div className="flex items-center gap-1.5">
+          {Array.from({ length: ALVO }, (_, i) => (
+            <span
+              key={i}
+              className={`w-3.5 h-3.5 rounded-full border transition-all duration-300 ${
+                i < score
+                  ? "bg-[#FF6801] border-[#C24E00] shadow-[0_0_8px_rgba(255,104,1,0.6)] scale-110"
+                  : "bg-black/10 border-black/15"
+              }`}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Tabuleiro — laje de concreto com moldura de canteiro */}
-      <div className="relative w-full max-w-[380px] aspect-square rounded-2xl p-1.5 shadow-xl faixa-perigo">
+      <div className="relative w-full max-w-[420px] aspect-square rounded-2xl p-1.5 shadow-xl faixa-perigo">
         <div className="relative w-full h-full rounded-xl overflow-hidden border-2 border-[#1B1712]">
-          <canvas
-            ref={canvasRef}
-            className="w-full h-full touch-none block"
-            onTouchStart={onTouchStart}
-            onTouchEnd={onTouchEnd}
-          />
+          <canvas ref={canvasRef} className="w-full h-full block" />
 
           {estado === "perdeu" && (
             <div className="absolute inset-0 bg-black/65 flex flex-col items-center justify-center gap-4 text-center p-6">
@@ -339,34 +360,54 @@ export default function MangoteGame({ onWin }: MangoteGameProps) {
         </div>
       </div>
 
-      {/* D-pad */}
+      {/* Dica + D-pad grande (dedão de tablet) */}
       {estado === "jogando" && (
-        <div className="grid grid-cols-3 gap-2 w-48 select-none">
-          <div />
-          <DPad onClick={() => dpad(0, -1)}>
-            <ChevronUp className="w-6 h-6" />
-          </DPad>
-          <div />
-          <DPad onClick={() => dpad(-1, 0)}>
-            <ChevronLeft className="w-6 h-6" />
-          </DPad>
-          <DPad onClick={() => dpad(0, 1)}>
-            <ChevronDown className="w-6 h-6" />
-          </DPad>
-          <DPad onClick={() => dpad(1, 0)}>
-            <ChevronRight className="w-6 h-6" />
-          </DPad>
-        </div>
+        <>
+          <p className="font-sans text-xs uppercase tracking-widest text-[#8A8375] -mb-1">
+            Deslize na tela ou use as setas
+          </p>
+          <div className="grid grid-cols-3 gap-4 w-72 md:w-80 select-none">
+            <div />
+            <DPad onPress={() => dpad(0, -1)} label="Cima">
+              <ChevronUp className="w-11 h-11" strokeWidth={2.5} />
+            </DPad>
+            <div />
+            <DPad onPress={() => dpad(-1, 0)} label="Esquerda">
+              <ChevronLeft className="w-11 h-11" strokeWidth={2.5} />
+            </DPad>
+            <DPad onPress={() => dpad(0, 1)} label="Baixo">
+              <ChevronDown className="w-11 h-11" strokeWidth={2.5} />
+            </DPad>
+            <DPad onPress={() => dpad(1, 0)} label="Direita">
+              <ChevronRight className="w-11 h-11" strokeWidth={2.5} />
+            </DPad>
+          </div>
+        </>
       )}
     </div>
   );
 }
 
-function DPad({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
+function DPad({
+  onPress,
+  label,
+  children,
+}: {
+  onPress: () => void;
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <button
-      onClick={onClick}
-      className="aspect-square rounded-xl bg-[#FDFBF6] border-2 border-black/10 text-[#23201B] flex items-center justify-center shadow-md active:bg-[#FF6801] active:text-white active:scale-95 transition-all cursor-pointer"
+      // pointerdown responde no TOQUE (click só dispara ao soltar — lento
+      // demais pra jogo); stopPropagation evita virar swipe do wrapper.
+      onPointerDown={(e) => {
+        e.stopPropagation();
+        onPress();
+      }}
+      onTouchStart={(e) => e.stopPropagation()}
+      aria-label={label}
+      className="aspect-square rounded-2xl bg-[#FDFBF6] border-2 border-black/10 text-[#23201B] flex items-center justify-center shadow-[0_6px_16px_-6px_rgba(43,38,33,0.4)] active:bg-[#FF6801] active:text-white active:border-[#C24E00] active:scale-90 transition-all duration-100 cursor-pointer"
     >
       {children}
     </button>
