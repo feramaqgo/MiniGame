@@ -224,6 +224,31 @@ o evento `beforeinstallprompt`; `BotaoInstalar` só renderiza quando o
 navegador oferece instalação — em destaque na tela de senha do tablet e
 discreto na tela do QR.
 
+**Modo demonstração REMOVIDO (04/08/2026):** não existe mais botão demo,
+`?teste=1`, prêmio fictício nem giro simulado. A roleta só gira pelo servidor
+com código validado. A chave da sessão virou `arcade_session_v2` pra invalidar
+sessões demo antigas, e `requireSession()` exige sessão de tablet com código —
+jogo só acontece no tablet do estande.
+
+**Placar do estande (04/08/2026):** tabela `arcade_scores` + RPC
+`ranking_arcade` (ver `sql/migration_scores.sql`, já aplicado).
+
+- **A pontuação é calculada no servidor** (`api/score.js`), nunca no cliente:
+  o jogo manda só tempo e jogadas. Escala única de 1000 a 2000 pros quatro
+  jogos — cada um declara o "custo" de uma partida perfeita e o de uma lenta,
+  e a nota é a posição do visitante entre esses extremos. Assim o ranking
+  geral compara jogos diferentes de forma justa (aferido: velha perfeita
+  1960, memória mediana 1432, cobrinha lenta 1105).
+- Nomes são gravados **já abreviados** ("Vinicius F.") porque a tela do placar
+  é pública.
+- `api/ranking.js` (público, sem PII) alimenta o `Placar` na recepção, com
+  filtro geral/por jogo. `api/campeao.js` (senha da equipe) alimenta a
+  `CampeaoScreen`, aberta por um botão discreto na tela do QR.
+
+**Controles do Mangote:** o d-pad foi removido — tocar em qualquer ponto do
+tabuleiro vira o mangote naquela direção (comparando com a cabeça), e deslizar
+continua funcionando. No tablet o alvo passa a ser a tela inteira.
+
 **Ideia em aberto (de antes):** fotos de fundo nas telas dos jogos (o usuário
 geraria as imagens). A roleta já tem vídeos de fundo.
 
