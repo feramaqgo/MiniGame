@@ -210,6 +210,20 @@ sequência reiniciada) — o primeiro visitante da feira será o código 1.
 - Roleta: halo de energia no giro, **prêmio gigante** no resultado com barra
   de tempo esvaziando (o atendente lê de longe).
 
+**PWA instalável (04/08/2026):** `public/manifest.webmanifest` (fullscreen,
+`start_url: /tablet`, atalhos pra tablet/cadastro/estoque), ícones gerados da
+cabeça do Rino sobre o laranja (`icon-192`, `icon-512`, `icon-maskable-512`
+com safe zone, `apple-touch-icon`) e `public/sw.js`.
+
+O service worker foi escrito pro wi-fi instável da feira, com uma regra
+inegociável: **`/api/*` nunca entra no cache** (resposta velha de cadastro,
+validação ou giro daria código errado/prêmio duplicado). HTML é network-first
+(deploy novo aparece no próximo carregamento) e `/assets/*` + mídia são
+cache-first (têm hash no nome, são imutáveis). `src/shared/lib/pwa.ts` guarda
+o evento `beforeinstallprompt`; `BotaoInstalar` só renderiza quando o
+navegador oferece instalação — em destaque na tela de senha do tablet e
+discreto na tela do QR.
+
 **Ideia em aberto (de antes):** fotos de fundo nas telas dos jogos (o usuário
 geraria as imagens). A roleta já tem vídeos de fundo.
 
