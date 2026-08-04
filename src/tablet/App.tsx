@@ -14,16 +14,9 @@ type Etapa = "bloqueado" | "qr" | "codigo" | "recepcao";
  * QR na tela → visitante escaneia e se cadastra no celular → "Já escaneei"
  * → digita o código recebido → recepção do Rino → escolhe um jogo → vence
  * → roleta (gira pelo código) → prêmio → volta pro QR sozinho.
- *
- * `?teste=1` simula tudo (sem senha, qualquer código, roleta simulada).
  */
 export default function App() {
-  const [testMode] = useState(
-    () => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("teste") === "1"
-  );
-  const [etapa, setEtapa] = useState<Etapa>(() =>
-    testMode || getTabletSenha() ? "qr" : "bloqueado"
-  );
+  const [etapa, setEtapa] = useState<Etapa>(() => (getTabletSenha() ? "qr" : "bloqueado"));
   const [visitante, setVisitante] = useState<{ codigo: number; nome: string | null } | null>(null);
 
   // Todo início de ciclo no QR limpa a sessão do visitante anterior.
@@ -43,7 +36,6 @@ export default function App() {
       picture: null,
       codigo,
       tablet: true,
-      demo: testMode || undefined,
     };
     saveSession(session);
     setVisitante({ codigo, nome });
@@ -59,11 +51,10 @@ export default function App() {
     case "bloqueado":
       return <SenhaScreen onDesbloqueado={() => setEtapa("qr")} />;
     case "qr":
-      return <QrScreen testMode={testMode} onJaEscaneei={() => setEtapa("codigo")} />;
+      return <QrScreen onJaEscaneei={() => setEtapa("codigo")} />;
     case "codigo":
       return (
         <CodigoScreen
-          testMode={testMode}
           onVoltar={() => setEtapa("qr")}
           onCodigoValido={handleCodigoValido}
           onTabletNaoAutorizado={handleTabletNaoAutorizado}

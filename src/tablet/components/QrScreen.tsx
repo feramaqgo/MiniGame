@@ -5,7 +5,6 @@ import { sfx } from "../../shared/lib/sfx";
 import BotaoInstalar from "../../shared/components/BotaoInstalar";
 
 interface QrScreenProps {
-  testMode: boolean;
   onJaEscaneei: () => void;
 }
 
@@ -16,7 +15,7 @@ const passos = [
 ];
 
 /** Tela de descanso do tablet: QR gigante convidando o visitante. */
-export default function QrScreen({ testMode, onJaEscaneei }: QrScreenProps) {
+export default function QrScreen({ onJaEscaneei }: QrScreenProps) {
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -34,11 +33,6 @@ export default function QrScreen({ testMode, onJaEscaneei }: QrScreenProps) {
       {/* Molduras de canteiro no topo e na base — enquadram o tablet no estande */}
       <div className="faixa-perigo fixed top-0 inset-x-0 h-3 z-40 pointer-events-none" />
       <div className="faixa-perigo fixed bottom-0 inset-x-0 h-3 z-40 pointer-events-none" />
-      {testMode && (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-amber-500 text-black text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full shadow-lg pointer-events-none">
-          ● Modo teste — nada é salvo
-        </div>
-      )}
 
       <div className="max-w-5xl w-full flex flex-col lg:flex-row items-center gap-8 lg:gap-14 relative z-10">
         {/* Lado esquerdo: convite + passos */}

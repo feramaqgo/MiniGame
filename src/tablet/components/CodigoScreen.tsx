@@ -4,7 +4,6 @@ import { getTabletSenha } from "../../shared/lib/tablet";
 import { sfx } from "../../shared/lib/sfx";
 
 interface CodigoScreenProps {
-  testMode: boolean;
   onVoltar: () => void;
   onCodigoValido: (codigo: number, nome: string | null) => void;
   onTabletNaoAutorizado: () => void;
@@ -15,7 +14,6 @@ const IDLE_MS = 90_000; // sem toque por 90s → volta pro QR sozinho
 
 /** Teclado numérico do tablet: o visitante digita o código do celular. */
 export default function CodigoScreen({
-  testMode,
   onVoltar,
   onCodigoValido,
   onTabletNaoAutorizado,
@@ -65,12 +63,6 @@ export default function CodigoScreen({
       return;
     }
 
-    if (testMode) {
-      sfx.vitoria();
-      onCodigoValido(codigo, "Visitante Teste");
-      return;
-    }
-
     setValidando(true);
     setErro(null);
 
@@ -108,12 +100,6 @@ export default function CodigoScreen({
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center py-8 px-6 relative overflow-hidden">
-      {testMode && (
-        <div className="fixed top-3 left-1/2 -translate-x-1/2 z-50 bg-amber-500 text-black text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full shadow-lg pointer-events-none">
-          ● Modo teste — qualquer código vale
-        </div>
-      )}
-
       <div className="max-w-md w-full space-y-6 relative z-10">
         <div className="text-center space-y-2">
           <h1 className="font-display text-3xl md:text-4xl uppercase tracking-tight font-bold text-[#1A1208]">

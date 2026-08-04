@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, Play } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { formatarWhatsApp, validarWhatsApp } from "../shared/lib/validation";
 import { renderGoogleButton, decodeGooglePayload } from "../shared/lib/googleIdentity";
 import { clearSession, getSession, saveSession } from "../shared/lib/session";
@@ -19,8 +19,8 @@ interface GoogleStep {
 export default function Hub() {
   const [session, setSession] = useState<ArcadeSession | null>(() => {
     const s = getSession();
-    // Sessão de versão antiga (sem código) não serve mais — refaz o cadastro.
-    if (s && s.codigo == null && !s.demo) {
+    // Sessão sem código não serve mais — refaz o cadastro.
+    if (s && s.codigo == null) {
       clearSession();
       return null;
     }
@@ -103,21 +103,6 @@ export default function Hub() {
     }
   };
 
-  // Botão demo: entra sem login real, só pra testar/mostrar o fluxo.
-  const entrarDemo = () => {
-    const demoSession: ArcadeSession = {
-      idToken: "demo",
-      celular: "(00) 00000-0000",
-      name: "Visitante Demo",
-      email: null,
-      picture: null,
-      codigo: 777,
-      demo: true,
-    };
-    saveSession(demoSession);
-    setSession(demoSession);
-  };
-
   const trocarConta = () => {
     sfx.click();
     clearSession();
@@ -183,17 +168,6 @@ export default function Hub() {
             <div className="flex justify-center py-2">
               <div ref={googleButtonRef} />
             </div>
-
-            <button
-              onClick={() => {
-                sfx.click();
-                entrarDemo();
-              }}
-              className="w-full border-2 border-amber-500 text-amber-700 hover:bg-amber-500/10 font-display text-sm uppercase tracking-widest px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
-            >
-              <Play className="w-4 h-4" />
-              <span>Entrar em modo demo</span>
-            </button>
           </>
         ) : (
           <form onSubmit={handleContinuar} className="space-y-4 text-left">

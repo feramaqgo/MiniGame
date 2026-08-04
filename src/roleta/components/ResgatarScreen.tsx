@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { motion } from "motion/react";
-import { Gift, Play, Sparkles } from "lucide-react";
+import { Gift, Sparkles } from "lucide-react";
 import RoletaWheel from "./RoletaWheel";
 import VideoBackdrop from "./VideoBackdrop";
 import { Prize } from "../types";
@@ -10,8 +10,6 @@ interface ResgatarScreenProps {
   nome: string | null;
   onResgatar: () => void;
   isLoading: boolean;
-  testMode?: boolean;
-  onTest?: () => void;
 }
 
 export default function ResgatarScreen({
@@ -19,8 +17,6 @@ export default function ResgatarScreen({
   nome,
   onResgatar,
   isLoading,
-  testMode,
-  onTest,
 }: ResgatarScreenProps) {
   // Qualquer toque, clique ou deslize na tela dispara o giro — no tablet as
   // pessoas tocam/arrastam a roleta por instinto. A trava garante um disparo
@@ -35,12 +31,7 @@ export default function ResgatarScreen({
   return (
     <div
       className="w-full min-h-screen flex flex-col justify-center items-center py-12 px-4 relative overflow-hidden cursor-pointer touch-none select-none"
-      onPointerDown={(e) => {
-        // Em modo teste o botão próprio decide (girar sem cadastro) — não
-        // roubamos o toque dos botões pra não disparar dois fluxos.
-        if (testMode && (e.target as HTMLElement).closest("button")) return;
-        dispararGiro();
-      }}
+      onPointerDown={dispararGiro}
     >
       <VideoBackdrop src="/roleta-fundo.mp4" />
       <motion.div
@@ -71,16 +62,6 @@ export default function ResgatarScreen({
           <Sparkles className="w-5 h-5" />
           <span>{isLoading ? "Resgatando..." : "Toque para girar!"}</span>
         </button>
-
-        {testMode && (
-          <button
-            onClick={onTest}
-            className="w-full border-2 border-amber-500 text-amber-700 hover:bg-amber-500/10 font-display text-sm uppercase tracking-widest px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
-          >
-            <Play className="w-4 h-4" />
-            <span>Girar em modo teste (sem cadastro)</span>
-          </button>
-        )}
 
         <p className="text-xs text-[#6B6048] uppercase tracking-widest font-sans">
           Toque em qualquer lugar pra girar · Um giro por pessoa · Brinde na hora

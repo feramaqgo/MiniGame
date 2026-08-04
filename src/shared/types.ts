@@ -21,7 +21,4 @@ export interface ArcadeSession {
   /** Sessão criada no tablet do estande (código validado). Jogos rodam
    * normalmente; a roleta gira por código e volta pro /tablet no fim. */
   tablet?: boolean;
-  /** Sessão de demonstração (botão demo / ?teste=1) — pula o login real e
-   * faz a roleta simular o giro, sem tocar no servidor. */
-  demo?: boolean;
 }

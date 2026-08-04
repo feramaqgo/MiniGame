@@ -1,24 +1,20 @@
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
-import { ArrowRight, PartyPopper, RotateCcw } from "lucide-react";
+import { ArrowRight, PartyPopper } from "lucide-react";
 import Confetti from "./Confetti";
 import VideoBackdrop from "./VideoBackdrop";
 import { Prize } from "../types";
 
 interface ResultadoScreenProps {
   prize: Prize | null;
-  testMode?: boolean;
-  onTestAgain?: () => void;
-  /** Fluxo tablet: volta pro início (tela do QR) pro próximo visitante. */
+  /** Volta pro início (tela do QR) pro próximo visitante. */
   onProximo?: () => void;
-  /** Fluxo tablet: segundos até voltar sozinho pro início. */
+  /** Segundos até voltar sozinho pro início. */
   autoVoltarSegundos?: number;
 }
 
 export default function ResultadoScreen({
   prize,
-  testMode,
-  onTestAgain,
   onProximo,
   autoVoltarSegundos,
 }: ResultadoScreenProps) {
@@ -103,15 +99,6 @@ export default function ResultadoScreen({
           </div>
         )}
 
-        {testMode && onTestAgain && (
-          <button
-            onClick={onTestAgain}
-            className="w-full border-2 border-amber-500 text-amber-700 hover:bg-amber-500/10 font-display text-sm uppercase tracking-widest px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
-          >
-            <RotateCcw className="w-4 h-4" />
-            <span>Testar de novo</span>
-          </button>
-        )}
       </motion.div>
     </div>
   );

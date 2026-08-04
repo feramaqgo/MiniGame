@@ -40,12 +40,6 @@ export default function CodigoScreen({ session, onTrocarConta }: CodigoScreenPro
           <style>{`@keyframes varrer { 0% { left: -35%; } 60%, 100% { left: 105%; } }`}</style>
         </div>
 
-        {session.demo && (
-          <p className="text-[11px] font-bold uppercase tracking-widest text-amber-600">
-            ● Modo demo — código de demonstração
-          </p>
-        )}
-
         {session.jaGirou ? (
           <p className="font-sans text-sm text-[#6B6048]">
             Você já girou a roleta com esse código. Obrigado por participar! 🎉
