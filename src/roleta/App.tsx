@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Etapa, Prize, TrackingFields } from "./types";
+import { Etapa, Prize } from "./types";
 import ResgatarScreen from "./components/ResgatarScreen";
 import GirandoScreen from "./components/GirandoScreen";
 import ResultadoScreen from "./components/ResultadoScreen";
@@ -8,8 +8,20 @@ import EsgotadoScreen from "./components/EsgotadoScreen";
 import ErroScreen from "./components/ErroScreen";
 import { buscarPremios } from "./lib/buscarPremios";
 import { girarRoleta } from "./lib/girarRoleta";
-import { requireSession } from "../shared/lib/session";
+import { clearSession, getSession } from "../shared/lib/session";
+import { getTabletSenha } from "../shared/lib/tablet";
 import { ArcadeSession } from "../shared/types";
+
+// Prêmios fictícios usados quando o modo simulado (demo/?teste=1) não
+// consegue buscar os reais — a roleta nunca fica vazia numa demonstração.
+const PREMIOS_DEMO: Prize[] = [
+  { id: "demo-1", name: "Boné", sort_order: 1 },
+  { id: "demo-2", name: "Trena", sort_order: 2 },
+  { id: "demo-3", name: "Cordão", sort_order: 3 },
+  { id: "demo-4", name: "Caneta", sort_order: 4 },
+  { id: "demo-5", name: "Abridor", sort_order: 5 },
+  { id: "demo-6", name: "Chaveiro", sort_order: 6 },
+];
 
 export default function App() {
   const [etapa, setEtapa] = useState<Etapa>("resgatar");
@@ -28,56 +40,52 @@ export default function App() {
   );
   const [spinNonce, setSpinNonce] = useState(0);
 
-  // Sessão do arcade (login feito no hub) — obrigatória, exceto em modo teste.
+  // Sessão do tablet (código validado no /tablet) — obrigatória, exceto em
+  // modo teste. Sessão de celular (sem tablet) volta pro hub, onde o código
+  // da pessoa está esperando por ela.
   const [session, setSession] = useState<ArcadeSession | null>(null);
   const [sessionChecked, setSessionChecked] = useState(false);
-
-  const [tracking, setTracking] = useState<TrackingFields>({
-    utm_source: null,
-    utm_medium: null,
-    utm_campaign: null,
-    utm_content: null,
-    utm_term: null,
-    userAgent: "",
-    url: "",
-  });
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      setTracking({
-        utm_source: params.get("utm_source"),
-        utm_medium: params.get("utm_medium"),
-        utm_campaign: params.get("utm_campaign"),
-        utm_content: params.get("utm_content"),
-        utm_term: params.get("utm_term"),
-        userAgent: navigator.userAgent || "Unknown User Agent",
-        url: window.location.href,
-      });
-    }
-  }, []);
 
   useEffect(() => {
     if (testMode) {
       setSessionChecked(true);
       return;
     }
-    const s = requireSession();
-    if (s) {
-      setSession(s);
-      setSessionChecked(true);
+    const s = getSession();
+    if (!s || (!s.tablet && !s.demo)) {
+      window.location.href = "/";
+      return;
     }
+    setSession(s);
+    setSessionChecked(true);
   }, [testMode]);
 
   useEffect(() => {
     buscarPremios().then((result) => {
-      setPrizes(result.prizes);
+      let lista = result.prizes;
+      // Modo simulado sem prêmios reais (dev sem /api, estoque vazio, etc):
+      // usa a lista fictícia pra demonstração nunca quebrar.
+      const simulado = testMode || !!getSession()?.demo;
+      if (lista.length === 0 && simulado) {
+        lista = PREMIOS_DEMO;
+      }
+      setPrizes(lista);
       setPrizesLoaded(true);
-      if (result.ok && result.prizes.length === 0) {
+      if (result.ok && lista.length === 0) {
         setEtapa((current) => (current === "resgatar" ? "esgotado" : current));
       }
     });
-  }, []);
+  }, [testMode]);
+
+  // Fim do ciclo no tablet: limpa a sessão do visitante e volta pro QR.
+  const voltarProTablet = () => {
+    const url = session?.demo ? "/tablet?teste=1" : "/tablet";
+    clearSession();
+    window.location.href = url;
+  };
+
+  // O tablet volta sozinho pro QR; quem abriu /roleta?teste=1 avulso não sai.
+  const emTablet = !!session?.tablet;
 
   // Giro simulado (modo teste): sorteia um prêmio local, sem tocar no servidor.
   const girarTeste = () => {
@@ -98,12 +106,12 @@ export default function App() {
       girarTeste();
       return;
     }
-    if (!session) return;
+    if (!session || session.codigo == null) return;
 
     setResgatando(true);
     setErrorMessage(null);
 
-    const resultado = await girarRoleta(session.idToken, session.celular, tracking);
+    const resultado = await girarRoleta(session.codigo, getTabletSenha());
     setResgatando(false);
 
     if (!resultado.ok) {
@@ -151,12 +159,18 @@ export default function App() {
         );
       case "resultado":
         return (
-          <ResultadoScreen prize={prizeGanho} testMode={modoSimulado} onTestAgain={girarTeste} />
+          <ResultadoScreen
+            prize={prizeGanho}
+            testMode={modoSimulado}
+            onTestAgain={emTablet ? undefined : girarTeste}
+            onProximo={emTablet ? voltarProTablet : undefined}
+            autoVoltarSegundos={emTablet ? 15 : undefined}
+          />
         );
       case "ja_participou":
-        return <JaParticipouScreen />;
+        return <JaParticipouScreen onProximo={emTablet ? voltarProTablet : undefined} />;
       case "esgotado":
-        return <EsgotadoScreen />;
+        return <EsgotadoScreen onProximo={emTablet ? voltarProTablet : undefined} />;
       case "erro":
         return (
           <ErroScreen message={errorMessage || undefined} onRetry={() => setEtapa("resgatar")} />

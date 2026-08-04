@@ -1,7 +1,12 @@
 import { motion } from "motion/react";
-import { UserCheck } from "lucide-react";
+import { ArrowRight, UserCheck } from "lucide-react";
 
-export default function JaParticipouScreen() {
+interface JaParticipouScreenProps {
+  /** Fluxo tablet: volta pro início (tela do QR) pro próximo visitante. */
+  onProximo?: () => void;
+}
+
+export default function JaParticipouScreen({ onProximo }: JaParticipouScreenProps) {
   return (
     <div className="w-full min-h-screen flex flex-col justify-center items-center py-12 px-4 relative overflow-hidden">
       <motion.div
@@ -17,6 +22,15 @@ export default function JaParticipouScreen() {
           Cada pessoa tem direito a um giro só na promoção. Se já girou, procure o atendente do
           estande Feramaq pra retirar seu brinde.
         </p>
+        {onProximo && (
+          <button
+            onClick={onProximo}
+            className="w-full bg-[#1A1208] hover:bg-black text-[#F5C518] font-display text-sm uppercase tracking-widest px-6 py-3.5 rounded-xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
+          >
+            <span>Próximo visitante</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        )}
       </motion.div>
     </div>
   );

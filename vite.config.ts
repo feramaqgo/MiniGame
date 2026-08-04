@@ -19,6 +19,7 @@ export default defineConfig(() => {
           cobrinha: path.resolve(__dirname, 'cobrinha.html'),
           memoria: path.resolve(__dirname, 'memoria.html'),
           velha: path.resolve(__dirname, 'velha.html'),
+          tablet: path.resolve(__dirname, 'tablet.html'),
           roleta: path.resolve(__dirname, 'roleta.html'),
           'roleta-admin': path.resolve(__dirname, 'roleta-admin.html'),
         },

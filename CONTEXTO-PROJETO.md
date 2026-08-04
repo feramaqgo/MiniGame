@@ -40,7 +40,8 @@ outro. O roteamento de URL limpo é feito por **rewrites no `vercel.json`**.
 
 | URL | HTML | Entry | O que é |
 |---|---|---|---|
-| `/` | `index.html` | `src/hub/main.tsx` | Login + menu de jogos (Hub) |
+| `/` | `index.html` | `src/hub/main.tsx` | Celular: login Google + WhatsApp → código único |
+| `/tablet` | `tablet.html` | `src/tablet/main.tsx` | Tablet do estande: QR → código → jogos (kiosk) |
 | `/chute` | `chute.html` | `src/main.tsx` | Jogo do pênalti |
 | `/cobrinha` | `cobrinha.html` | `src/cobrinha/main.tsx` | Mangote de Concreto (snake) |
 | `/memoria` | `memoria.html` | `src/memoria/main.tsx` | Jogo da memória |
@@ -51,19 +52,32 @@ outro. O roteamento de URL limpo é feito por **rewrites no `vercel.json`**.
 As entradas estão registradas em `vite.config.ts` (`build.rollupOptions.input`) e os
 rewrites em `vercel.json`. **Ao adicionar uma página nova, tem que mexer nos dois.**
 
-## Fluxo do usuário
+## Fluxo do usuário (dinâmica do estande, versão tablet + código)
 
-1. **`/` (Hub)** — máquina de 2 estados:
-   - **Login**: botão "Entrar com Google" **+ um botão "Entrar em modo demo"**. O
-     login real do Google **ainda não está ativo** (falta o Client ID — ver adiante).
-     O **modo demo** cria uma sessão falsa (`demo: true`) e já entra no menu — é como
-     tudo é testado hoje.
-   - **Menu**: grid com os 4 jogos (todos habilitados) + a roleta é o prêmio, não
-     aparece como jogo escolhível.
-2. Escolhe um jogo → joga → **ao vencer**, `window.location.href = "/roleta"`.
-   Perder/empatar nunca bloqueia: só manda tentar de novo (filosofia "sempre ganável").
-3. **`/roleta`** — usa a sessão salva pra girar. Sorteia um prêmio ponderado por
-   estoque, mostra "Você ganhou: X", e a pessoa mostra a tela pro atendente.
+O tablet do estande fica num loop de quiosque; o celular do visitante só faz o
+cadastro e recebe um **código sequencial único** (1, 2, 3…) que conta os
+participantes.
+
+1. **Tablet (`/tablet`)** — mostra QR code gigante + botão "Já escaneei".
+   (Primeiro uso do aparelho pede a senha da equipe — a `ADMIN_PASSPHRASE` — e
+   guarda no localStorage. `?teste=1` simula tudo: sem senha, qualquer código.)
+2. **Celular (`/`)** — o visitante escaneia o QR: login Google → digita o
+   WhatsApp → `/api/cadastrar` valida o token, chama a RPC
+   `cadastrar_participante` (idempotente por conta Google: re-login devolve o
+   MESMO código) e espelha o lead no CRM. A tela mostra o **código gigante**.
+3. **Tablet** — visitante toca "Já escaneei" → teclado numérico → o código é
+   validado em `/api/validar-codigo` (devolve o nome) → **recepção do Rino**
+   ("Olá, {nome}! Eu sou o Rino!") → menu dos 4 jogos.
+4. Joga no tablet → **ao vencer**, `/roleta`. Perder nunca bloqueia: tenta de
+   novo à vontade (filosofia "sempre ganável").
+5. **`/roleta`** (no tablet) — gira via `/api/girar` com o código; a RPC
+   `girar_roleta_codigo` sorteia ponderado por estoque, decrementa, grava o
+   prêmio na linha do participante e marca `codigo_usado`. Tela de resultado
+   mostra o prêmio (atendente entrega o brinde), e depois de 15s (ou no botão
+   "Próximo visitante") volta sozinha pro QR limpando a sessão.
+
+Na tabela `roleta_participants` fica tudo junto: código, nome, e-mail,
+WhatsApp e o prêmio ganho — exatamente o que a equipe consulta durante a feira.
 
 ### Sessão compartilhada entre páginas
 
@@ -147,35 +161,46 @@ um componente do jogo que recebe `onWin` (= redireciona pra `/roleta`). Cada um 
 ### Variáveis de ambiente (Vercel, produção)
 
 - `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` — já configuradas.
-- `ADMIN_PASSPHRASE` — já configurada (senha atual: `concreteshow2026`).
-- `GOOGLE_CLIENT_ID` — **ainda não configurada** (o `api/girar.js` já usa; falta o
-  valor real).
+- `ADMIN_PASSPHRASE` — já configurada (senha atual: `concreteshow2026`). É a
+  mesma senha que desbloqueia o tablet (`/tablet`) e autoriza os endpoints
+  `validar-codigo` e `girar`.
+- `GOOGLE_CLIENT_ID` — **configurada** (2026-08-04, projeto Google Cloud
+  "Roleta ConcreteShow"). O mesmo valor está hardcoded (é público) em
+  `src/shared/lib/googleIdentity.ts`.
 
-## Estado atual / o que falta
+## Estado atual (2026-08-04)
 
-**Pronto e no ar:** os 4 jogos, o menu, o botão demo, a roleta completa (com vídeos e
-modo teste), o painel admin, todo o backend e o SQL escritos.
+**Tudo pronto e configurado de ponta a ponta:**
 
-**Falta pra virar produção real com público (2 bloqueantes, ambos dependem do cliente):**
+- Fluxo tablet + código implementado (páginas, APIs, RPCs) e testado.
+- **Banco migrado de verdade** no Supabase (via Management API, com personal
+  access token do usuário): tabela `roleta_participants` recriada no schema
+  novo (Google + `codigo` sequencial único + `codigo_usado`), RPCs
+  `cadastrar_participante` e `girar_roleta_codigo` criadas e testadas
+  (cadastro repetido devolve o mesmo código; giro repetido dá
+  `JA_PARTICIPOU`). Sequência zerada — o primeiro visitante real é o código 1.
+  O SQL aplicado está em `sql/migration_codigo.sql` (versão consolidada que
+  dropa a tabela antiga vazia).
+- **8 brindes reais cadastrados** (600 giros): Camiseta Personalizada x5,
+  Cheirinho de Carro x15, Bloquinho de Anotações x50, Boné x15, Trena
+  Chaveiro x73, Protetor Auricular x148, Caneta Personalizada x153, Abridor
+  Chaveiro x141.
+- **Google OAuth ativo**: Client ID real no código e na env da Vercel.
+- A roleta desenha as fatias com a **primeira palavra** do prêmio (fonte
+  adaptativa — nomes compostos não cabem no arco com 8 fatias); o nome
+  completo aparece na tela de resultado.
+- O giro tem **timer de segurança**: se o `transitionend` não vier (aba
+  escondida/engasgo), `onSpinComplete` dispara mesmo assim — kiosk não trava.
 
-1. **Login com Google não está ativo.** Precisa criar um **OAuth Client ID** no Google
-   Cloud Console (origem autorizada: `https://promocao.feramaq.com.br`) e:
-   - Trocar o placeholder `GOOGLE_CLIENT_ID = "SUBSTITUA_PELO_CLIENT_ID..."` em
-     `src/shared/lib/googleIdentity.ts`.
-   - Rodar `vercel env add GOOGLE_CLIENT_ID production` com o mesmo valor.
-   Enquanto isso não acontece, só o **botão demo** funciona (o que é suficiente pra
-   testar/demonstrar todos os jogos e a roleta simulada).
-2. **Rodar `sql/migration_google_login.sql`** no SQL Editor do Supabase — só depois
-   disso a RPC nova (com parâmetros do Google) existe de verdade no banco e o giro real
-   funciona.
+**Pendências pequenas (no Google Cloud Console, lado do cliente):**
+1. No cliente OAuth (menu Clientes), conferir/adicionar as **Origens
+   JavaScript autorizadas**: `https://promocao.feramaq.com.br` e
+   `http://localhost:3000`.
+2. Em **Público-alvo**, **publicar o app** ("Em produção") — senão só contas
+   de teste logam.
 
-**Próxima tarefa pedida pelo usuário (em aberto):** adicionar **fotos de fundo** em
-cada tela (tela inicial + cada jogo). O usuário vai gerar as imagens (prompts já
-entregues) e colocar em `public/` com nomes tipo `fundo-inicial.jpg`, `fundo-chute.jpg`,
-`fundo-cobrinha.jpg`, `fundo-memoria.jpg`, `fundo-velha.jpg`. Falta **encaixar cada uma
-no fundo da tela certa** (provavelmente um componente tipo o `VideoBackdrop` da roleta,
-com véu claro por cima pra não atrapalhar a leitura), otimizando as imagens se vierem
-grandes. A roleta já tem vídeos de fundo, não precisa.
+**Ideia em aberto (de antes):** fotos de fundo nas telas dos jogos (o usuário
+geraria as imagens). A roleta já tem vídeos de fundo.
 
 ## Convenções e aprendizados úteis
 

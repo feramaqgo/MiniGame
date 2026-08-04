@@ -1,7 +1,8 @@
 // Client ID público do OAuth do Google (não é segredo — restrito por
 // domínio autorizado no Google Cloud Console, não por sigilo).
-// TODO: substituir pelo Client ID real assim que criado no Google Cloud Console.
-export const GOOGLE_CLIENT_ID = "SUBSTITUA_PELO_CLIENT_ID.apps.googleusercontent.com";
+// Projeto "Roleta ConcreteShow" no Google Cloud da Feramaq.
+export const GOOGLE_CLIENT_ID =
+  "644098493273-9us95udj3slovi09cvtp0af7mu8vgk84.apps.googleusercontent.com";
 
 interface GoogleCredentialResponse {
   credential: string;

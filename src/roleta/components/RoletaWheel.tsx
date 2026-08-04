@@ -49,6 +49,13 @@ function slicePath(start: number, end: number, r: number) {
   return `M ${C} ${C} L ${a.x} ${a.y} A ${r} ${r} 0 ${large} 1 ${b.x} ${b.y} Z`;
 }
 
+// Rótulo curto da fatia: primeira palavra do prêmio ("Camiseta Personalizada"
+// → "Camiseta"). O nome completo aparece na tela de resultado; na roda, com
+// muitas fatias, o arco é curto demais pra nomes compostos.
+function rotuloCurto(name: string) {
+  return name.split(" ")[0];
+}
+
 // Arco pra o texto curvado. Na metade de baixo da roda o arco é invertido
 // pra o texto não ficar de cabeça pra baixo.
 function labelArc(start: number, end: number, mid: number, r: number) {
@@ -89,12 +96,26 @@ export default function RoletaWheel({ prizes, targetPrizeId, onSpinComplete }: R
     });
   }, [prizes]);
 
+  const reduce =
+    typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+  // Garante que onSpinComplete dispare uma vez só, mesmo se o transitionend
+  // não vier (aba escondida, navegador engasgado — importante num tablet de
+  // estande que não pode travar em "Girando...").
+  const completedFor = useRef<string | null>(null);
+  const concluirGiro = () => {
+    if (!targetPrizeId || completedFor.current === targetPrizeId) return;
+    completedFor.current = targetPrizeId;
+    onSpinComplete?.();
+  };
+
   useEffect(() => {
     if (!targetPrizeId || hasSpunFor.current === targetPrizeId) return;
     const winning = slices.find((s) => s.prize.id === targetPrizeId);
 
     if (!winning) {
       hasSpunFor.current = targetPrizeId;
+      completedFor.current = targetPrizeId;
       onSpinComplete?.();
       return;
     }
@@ -110,8 +131,15 @@ export default function RoletaWheel({ prizes, targetPrizeId, onSpinComplete }: R
     setRotation(finalRotation);
   }, [targetPrizeId, slices, onSpinComplete]);
 
-  const reduce =
-    typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  // Timer de segurança em effect separado: o effect do giro é protegido por
+  // hasSpunFor e roda uma vez só — se o timer morasse lá, o remount do
+  // StrictMode limparia o timeout sem rearmar. Aqui ele sempre rearma.
+  useEffect(() => {
+    if (!targetPrizeId) return;
+    const fallback = window.setTimeout(concluirGiro, (reduce ? 400 : SPIN_MS) + 800);
+    return () => window.clearTimeout(fallback);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [targetPrizeId]);
 
   const studs = Array.from({ length: STUDS }, (_, i) => {
     const p = polar((360 / STUDS) * i, R_STUD);
@@ -151,7 +179,7 @@ export default function RoletaWheel({ prizes, targetPrizeId, onSpinComplete }: R
             : "none",
           willChange: "transform",
         }}
-        onTransitionEnd={() => onSpinComplete?.()}
+        onTransitionEnd={concluirGiro}
       >
         <defs>
           <linearGradient id="sl-orange" x1="0" y1="0" x2="1" y2="1">
@@ -216,21 +244,26 @@ export default function RoletaWheel({ prizes, targetPrizeId, onSpinComplete }: R
           </g>
         ))}
 
-        {/* Rótulos curvados */}
-        {slices.map((s) => (
-          <text
-            key={`t-${s.prize.id}`}
-            fill={s.ink}
-            fontSize="13"
-            fontFamily="'Russo One', sans-serif"
-            fontWeight="700"
-            letterSpacing="0.5"
-          >
-            <textPath href={`#arc-${s.prize.id}`} startOffset="50%" textAnchor="middle" className="uppercase">
-              {s.prize.name}
-            </textPath>
-          </text>
-        ))}
+        {/* Rótulos curvados — fonte encolhe se o rótulo não couber no arco */}
+        {slices.map((s) => {
+          const rotulo = rotuloCurto(s.prize.name);
+          const arcLen = ((s.end - s.start) / 360) * 2 * Math.PI * R_LABEL;
+          const fontSize = Math.max(8, Math.min(13, (arcLen * 0.92) / (rotulo.length * 0.62)));
+          return (
+            <text
+              key={`t-${s.prize.id}`}
+              fill={s.ink}
+              fontSize={fontSize}
+              fontFamily="'Russo One', sans-serif"
+              fontWeight="700"
+              letterSpacing="0.5"
+            >
+              <textPath href={`#arc-${s.prize.id}`} startOffset="50%" textAnchor="middle" className="uppercase">
+                {rotulo}
+              </textPath>
+            </text>
+          );
+        })}
 
         {/* Cubo central */}
         <circle cx={C} cy={C} r={R_HUB + 5} fill="#160F0A" />

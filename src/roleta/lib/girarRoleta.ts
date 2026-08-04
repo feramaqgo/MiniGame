@@ -1,22 +1,23 @@
-import { Prize, TrackingFields } from "../types";
+import { Prize } from "../types";
 
 export interface GirarResultado {
   ok: boolean;
   prize?: Prize;
-  reason?: "ja_participou" | "esgotado" | "erro";
+  reason?: "ja_participou" | "esgotado" | "codigo_invalido" | "erro";
   message?: string;
 }
 
+/** Gira a roleta pelo código do participante (fluxo tablet). A senha do
+ * tablet autoriza a chamada — o servidor valida as duas coisas. */
 export async function girarRoleta(
-  idToken: string,
-  celular: string,
-  tracking: TrackingFields
+  codigo: number,
+  senha: string | null
 ): Promise<GirarResultado> {
   try {
     const response = await fetch("/api/girar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ idToken, celular, tracking }),
+      body: JSON.stringify({ codigo, senha }),
     });
 
     const result = await response.json().catch(() => ({}));

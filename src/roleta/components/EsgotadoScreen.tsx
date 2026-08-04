@@ -1,7 +1,12 @@
 import { motion } from "motion/react";
-import { PackageX } from "lucide-react";
+import { ArrowRight, PackageX } from "lucide-react";
 
-export default function EsgotadoScreen() {
+interface EsgotadoScreenProps {
+  /** Fluxo tablet: volta pro início (tela do QR) pro próximo visitante. */
+  onProximo?: () => void;
+}
+
+export default function EsgotadoScreen({ onProximo }: EsgotadoScreenProps) {
   return (
     <div className="w-full min-h-screen flex flex-col justify-center items-center py-12 px-4 relative overflow-hidden">
       <motion.div
@@ -17,6 +22,15 @@ export default function EsgotadoScreen() {
           Obrigado pelo interesse! Todos os brindes desta promoção já foram distribuídos. Fica de
           olho nas próximas ações da Feramaq.
         </p>
+        {onProximo && (
+          <button
+            onClick={onProximo}
+            className="w-full bg-[#1A1208] hover:bg-black text-[#F5C518] font-display text-sm uppercase tracking-widest px-6 py-3.5 rounded-xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
+          >
+            <span>Próximo visitante</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        )}
       </motion.div>
     </div>
   );
