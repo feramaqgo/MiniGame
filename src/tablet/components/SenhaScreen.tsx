@@ -16,7 +16,10 @@ export default function SenhaScreen({ onDesbloqueado }: SenhaScreenProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!senha || validando) return;
+    // Teclados de tablet adoram colar espaço no fim ou capitalizar — a senha
+    // é comparada exata no servidor, então limpamos antes de enviar.
+    const senhaLimpa = senha.trim();
+    if (!senhaLimpa || validando) return;
 
     sfx.click();
     setValidando(true);
@@ -26,16 +29,16 @@ export default function SenhaScreen({ onDesbloqueado }: SenhaScreenProps) {
       const response = await fetch("/api/tablet-auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ senha }),
+        body: JSON.stringify({ senha: senhaLimpa }),
       });
 
       if (!response.ok) {
         sfx.erro();
-        setErro("Senha incorreta.");
+        setErro("Senha incorreta. Ela é toda minúscula, sem espaços.");
         return;
       }
 
-      saveTabletSenha(senha);
+      saveTabletSenha(senhaLimpa);
       sfx.vitoria();
       onDesbloqueado();
     } catch {
@@ -74,6 +77,10 @@ export default function SenhaScreen({ onDesbloqueado }: SenhaScreenProps) {
             }}
             placeholder="Senha da equipe"
             autoFocus
+            autoCapitalize="off"
+            autoCorrect="off"
+            spellCheck={false}
+            autoComplete="off"
             className="w-full bg-white border-2 border-black/10 focus:border-[#FF6801] text-[#1A1208] px-4 py-3 rounded-lg outline-none font-sans text-base text-center transition-colors focus:ring-1 focus:ring-[#FF6801]"
           />
           {erro && <p className="text-xs text-rose-500 font-sans font-medium">{erro}</p>}
