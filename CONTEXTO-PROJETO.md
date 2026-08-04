@@ -192,12 +192,23 @@ um componente do jogo que recebe `onWin` (= redireciona pra `/roleta`). Cada um 
 - O giro tem **timer de segurança**: se o `transitionend` não vier (aba
   escondida/engasgo), `onSpinComplete` dispara mesmo assim — kiosk não trava.
 
-**Pendências pequenas (no Google Cloud Console, lado do cliente):**
-1. No cliente OAuth (menu Clientes), conferir/adicionar as **Origens
-   JavaScript autorizadas**: `https://promocao.feramaq.com.br` e
-   `http://localhost:3000`.
-2. Em **Público-alvo**, **publicar o app** ("Em produção") — senão só contas
-   de teste logam.
+**Teste real de ponta a ponta validado** (04/08/2026): login Google real →
+código 1 → validação no tablet → jogo → roleta → prêmio gravado na linha do
+participante. Depois disso o banco foi **zerado** (0 participantes, 600 giros,
+sequência reiniciada) — o primeiro visitante da feira será o código 1.
+
+**Camada visual (passada do "show", 04/08/2026):**
+- Global: brilhos flutuantes de fundo, cartões com relevo mais rico, foco
+  visível, `.texto-fera` (título metálico animado laranja→dourado).
+- Mangote: d-pad 3x maior e espaçado, resposta no `pointerdown`, **swipe
+  contínuo na tela inteira** (pilota sem soltar o dedo), progresso em pips.
+- Memória: 4 colunas no tablet (cabe sem rolagem), pips de pares, pop de
+  acerto com selo verde.
+- Velha: badge "sua vez"/"Rino pensando", prévia fantasma no hover, marcas
+  com animação de entrada.
+- Chute: mira maior com anel pulsante, campo mais alto.
+- Roleta: halo de energia no giro, **prêmio gigante** no resultado com barra
+  de tempo esvaziando (o atendente lê de longe).
 
 **Ideia em aberto (de antes):** fotos de fundo nas telas dos jogos (o usuário
 geraria as imagens). A roleta já tem vídeos de fundo.
