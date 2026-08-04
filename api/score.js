@@ -1,37 +1,108 @@
 // Registra a pontuação de um visitante ao vencer um jogo.
 //
-// A pontuação é calculada AQUI, no servidor, a partir do tempo e das jogadas
-// — o cliente nunca envia "pontos". Assim o placar não depende de confiar na
-// tela do tablet.
+// A pontuação é calculada AQUI, no servidor, a partir das métricas cruas — o
+// cliente nunca envia "pontos". Assim o placar não depende de confiar na tela
+// do tablet.
 //
-// Escala única pros quatro jogos: 1000 por vencer + até 1000 de desempenho.
-// Cada jogo declara o "custo" de uma partida perfeita e o de uma partida
-// lenta; a nota é a posição do visitante entre esses dois extremos. Isso
-// deixa o ranking geral justo, mesmo os jogos sendo bem diferentes.
+// ---------------------------------------------------------------------------
+// COMO O PLACAR É EQUILIBRADO
+//
+// Todo jogo dá 1000 por vencer + até 1000 de desempenho, dividido em três
+// componentes. O que muda de jogo pra jogo é o PESO de cada componente, não a
+// escala final — assim chegar perto de 2000 custa um esforço parecido nos
+// quatro, mesmo eles sendo jogos muito diferentes.
+//
+//   TENTATIVAS — quantas partidas até vencer. É a única métrica que significa
+//     a mesma coisa em todos os jogos, então é ela que segura o equilíbrio.
+//     Pesa mais onde a habilidade é pouco mensurável (Chute e Velha vencem em
+//     uma ou três jogadas) e menos na Memória, que quase não tem derrota.
+//
+//   HABILIDADE — a métrica própria do jogo, escolhida pra medir perícia e não
+//     sorte. No Mangote é eficiência de rota (não o tempo: tempo puro premia
+//     quem teve a comida nascendo perto). No Chute é a distância do goleiro,
+//     que é o timing real. Memória e Velha usam jogadas.
+//
+//   RAPIDEZ — peso pequeno de propósito. Quando o tempo valia tudo, qualquer
+//     pessoa ágil estourava o teto de 2000 e o ranking empatava no topo.
+// ---------------------------------------------------------------------------
 
 const REGRAS = {
-  // custo = segundos até vencer (chute é um único chute certeiro)
-  chute: { perfeito: 3, ruim: 20, custo: (s) => s },
-  // 6 pares; jogadas acima do mínimo (6) pesam 3s cada
-  memoria: { perfeito: 25, ruim: 120, custo: (s, j) => s + Math.max(0, j - 6) * 3 },
-  // 6 porções de concreto; só o tempo conta
-  cobrinha: { perfeito: 25, ruim: 120, custo: (s) => s },
-  // vitória mínima em 3 jogadas; cada jogada extra pesa 4s
-  velha: { perfeito: 10, ruim: 60, custo: (s, j) => s + Math.max(0, j - 3) * 4 },
+  chute: {
+    // Uma ação só: quem acerta de primeira e longe do goleiro tem mérito.
+    pesos: { tentativas: 400, habilidade: 400, rapidez: 200 },
+    // Distância entre a mira e o goleiro no momento do chute (unidades de %
+    // da largura do gol). Abaixo de 5 o goleiro defende, então 5 é o piso.
+    // O "ótimo" fica perto do máximo teórico (~50) de propósito: bater no
+    // teto de 2000 precisa ser raro, senão o topo do ranking empata.
+    habilidade: { campo: "margem", otimo: 44, pessimo: 5 },
+    rapidez: { otimo: 4, pessimo: 25 },
+  },
+  memoria: {
+    // Praticamente não tem derrota — o mérito está em errar poucos pares.
+    pesos: { tentativas: 150, habilidade: 600, rapidez: 250 },
+    // 6 jogadas é o mínimo teórico (nunca errar um par) — praticamente
+    // impossível, então quem chega perto disso merece o topo.
+    habilidade: { campo: "jogadas", otimo: 6, pessimo: 18 },
+    rapidez: { otimo: 26, pessimo: 110 },
+  },
+  cobrinha: {
+    // Eficiência de rota: passos mínimos necessários / passos realmente dados.
+    // 1.0 seria a rota perfeita — impossível na prática por causa das curvas.
+    pesos: { tentativas: 350, habilidade: 400, rapidez: 250 },
+    habilidade: { campo: "eficiencia", otimo: 0.85, pessimo: 0.25 },
+    rapidez: { otimo: 15, pessimo: 75 },
+  },
+  velha: {
+    // Com a IA mais atenta, vencer de primeira virou o grande diferencial.
+    pesos: { tentativas: 450, habilidade: 350, rapidez: 200 },
+    habilidade: { campo: "jogadas", otimo: 3, pessimo: 5 },
+    rapidez: { otimo: 6, pessimo: 40 },
+  },
 };
 
-function calcularPontos(jogo, tempoMs, jogadas) {
+/** Normaliza um valor entre "ótimo" (1) e "péssimo" (0), em qualquer direção. */
+function normalizar(valor, otimo, pessimo) {
+  if (typeof valor !== "number" || Number.isNaN(valor)) return 0;
+  const bruto = (valor - pessimo) / (otimo - pessimo);
+  return Math.max(0, Math.min(1, bruto));
+}
+
+function calcularPontos(jogo, dados) {
   const regra = REGRAS[jogo];
   if (!regra) return null;
 
-  const segundos = tempoMs / 1000;
-  const custo = regra.custo(segundos, jogadas || 0);
+  const { pesos } = regra;
 
-  // 1 = partida perfeita, 0 = partida lenta (ou pior).
-  const bruto = (regra.ruim - custo) / (regra.ruim - regra.perfeito);
-  const desempenho = Math.max(0, Math.min(1, bruto));
+  // Tentativas: venceu de primeira leva tudo; cada partida perdida antes da
+  // vitória corta 25%. A partir da 5ª tentativa esse componente zera.
+  const tentativas = Math.max(1, Number.parseInt(dados.tentativas, 10) || 1);
+  const fatorTentativas = Math.max(0, 1 - (tentativas - 1) * 0.25);
 
-  return 1000 + Math.round(desempenho * 1000);
+  // Habilidade: métrica própria do jogo.
+  let valorHabilidade = dados[regra.habilidade.campo];
+  if (regra.habilidade.campo === "eficiencia") {
+    // Mangote manda passos crus; a eficiência é calculada aqui.
+    const passos = Number(dados.passos);
+    const minimos = Number(dados.passosMinimos);
+    valorHabilidade = passos > 0 && minimos > 0 ? minimos / passos : 0;
+  } else {
+    valorHabilidade = Number(valorHabilidade);
+  }
+  const fatorHabilidade = normalizar(
+    valorHabilidade,
+    regra.habilidade.otimo,
+    regra.habilidade.pessimo
+  );
+
+  const segundos = Number(dados.tempoMs) / 1000;
+  const fatorRapidez = normalizar(segundos, regra.rapidez.otimo, regra.rapidez.pessimo);
+
+  const desempenho =
+    fatorTentativas * pesos.tentativas +
+    fatorHabilidade * pesos.habilidade +
+    fatorRapidez * pesos.rapidez;
+
+  return 1000 + Math.round(desempenho);
 }
 
 /** "Vinicius Ferreira" -> "Vinicius F." — o placar fica numa tela pública. */
@@ -48,7 +119,8 @@ export default async function handler(req, res) {
     return;
   }
 
-  const { codigo, senha, jogo, tempoMs, jogadas } = req.body || {};
+  const { codigo, senha, jogo, tempoMs, jogadas, tentativas, margem, passos, passosMinimos } =
+    req.body || {};
 
   if (!process.env.ADMIN_PASSPHRASE || senha !== process.env.ADMIN_PASSPHRASE) {
     res.status(401).json({ ok: false, message: "Tablet não autorizado" });
@@ -95,7 +167,14 @@ export default async function handler(req, res) {
     return;
   }
 
-  const pontos = calcularPontos(jogo, tempo, jogadas);
+  const pontos = calcularPontos(jogo, {
+    tempoMs: tempo,
+    jogadas,
+    tentativas,
+    margem,
+    passos,
+    passosMinimos,
+  });
 
   try {
     const r = await fetch(`${process.env.SUPABASE_URL}/rest/v1/arcade_scores`, {
@@ -109,6 +188,7 @@ export default async function handler(req, res) {
         pontos,
         tempo_ms: tempo,
         jogadas: Number.isInteger(jogadas) ? jogadas : null,
+        tentativas: Number.isInteger(tentativas) ? tentativas : 1,
       }),
     });
     if (!r.ok) throw new Error(await r.text());

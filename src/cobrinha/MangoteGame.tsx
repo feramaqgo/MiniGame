@@ -42,6 +42,14 @@ export default function MangoteGame({ onWin }: MangoteGameProps) {
   const pulseRef = useRef(0); // brilho pulsante da comida
   const inicioRef = useRef(0); // instante em que a partida começou (placar)
 
+  // --- métricas do placar ---
+  const tentativasRef = useRef(1); // em qual tentativa a pessoa está
+  const passosRef = useRef(0); // passos realmente dados
+  /** Soma das distâncias mínimas (Manhattan) até cada porção. Comparado com
+   * os passos dados, mede a eficiência da rota — assim a pontuação não
+   * depende da sorte de a comida nascer perto. */
+  const passosMinimosRef = useRef(0);
+
   const novaComida = useCallback(() => {
     const MARGEM = 2;
     const faixa = GRID - MARGEM * 2;
@@ -53,6 +61,12 @@ export default function MangoteGame({ onWin }: MangoteGameProps) {
       };
     } while (snakeRef.current.some((s) => mesmaCelula(s, c)));
     foodRef.current = c;
+
+    // Guarda o caminho mais curto possível da cabeça até esta porção.
+    const cabeca = snakeRef.current[0];
+    if (cabeca) {
+      passosMinimosRef.current += Math.abs(c.x - cabeca.x) + Math.abs(c.y - cabeca.y);
+    }
   }, []);
 
   const desenhar = useCallback(() => {
@@ -194,6 +208,7 @@ export default function MangoteGame({ onWin }: MangoteGameProps) {
     const novaSnake = [novaCabeca, ...snake];
     if (!comeu) novaSnake.pop();
     snakeRef.current = novaSnake;
+    passosRef.current += 1;
 
     if (comeu) {
       sfx.comer();
@@ -203,7 +218,12 @@ export default function MangoteGame({ onWin }: MangoteGameProps) {
       if (novoScore >= ALVO) {
         sfx.vitoria();
         setEstado("venceu");
-        registrarScore("cobrinha", performance.now() - inicioRef.current);
+        registrarScore("cobrinha", {
+          tempoMs: performance.now() - inicioRef.current,
+          tentativas: tentativasRef.current,
+          passos: passosRef.current,
+          passosMinimos: passosMinimosRef.current,
+        });
         desenhar();
         return;
       }
@@ -225,10 +245,19 @@ export default function MangoteGame({ onWin }: MangoteGameProps) {
     setScore(0);
     setComecou(false); // espera o primeiro toque de novo
     inicioRef.current = performance.now();
+    // Zera as métricas da partida (as tentativas seguem acumulando).
+    passosRef.current = 0;
+    passosMinimosRef.current = 0;
     novaComida();
     setEstado("jogando");
     desenhar();
   }, [desenhar, novaComida]);
+
+  /** "Tentar de novo" após bater: conta mais uma tentativa no placar. */
+  const tentarDeNovo = useCallback(() => {
+    tentativasRef.current += 1;
+    iniciar();
+  }, [iniciar]);
 
   const mudarDirecao = useCallback((nx: number, ny: number) => {
     const atual = dirRef.current;
@@ -434,7 +463,7 @@ export default function MangoteGame({ onWin }: MangoteGameProps) {
               <button
                 onClick={() => {
                   sfx.click();
-                  iniciar();
+                  tentarDeNovo();
                 }}
                 className="btn-laranja font-display text-base uppercase tracking-widest px-6 py-3 rounded-xl flex items-center gap-2 cursor-pointer"
               >

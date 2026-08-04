@@ -18,6 +18,7 @@ export default function App() {
   const [etapa, setEtapa] = useState<Etapa>("story");
   const [sessionChecked, setSessionChecked] = useState(false);
   const inicioRef = useRef(performance.now()); // início da partida (placar)
+  const tentativasRef = useRef(1); // em qual chute a pessoa está (placar)
 
   // Background music — starts on the first user click (browsers block audio
   // with sound until there's a user gesture), loops for the rest of the flow.
@@ -100,13 +101,20 @@ export default function App() {
                 <span>ACERTE O GOL E GANHE UM PRÊMIO</span>
               </h2>
               <Game
-                onGoal={async () => {
+                onGoal={async (margem) => {
                   // Grava o placar antes de sair da página; se falhar, segue
                   // pra roleta do mesmo jeito.
-                  await registrarScore("chute", performance.now() - inicioRef.current);
+                  await registrarScore("chute", {
+                    tempoMs: performance.now() - inicioRef.current,
+                    tentativas: tentativasRef.current,
+                    margem,
+                  });
                   window.location.href = "/roleta";
                 }}
-                onMiss={() => setEtapa("erro")}
+                onMiss={() => {
+                  tentativasRef.current += 1; // errou: conta mais uma tentativa
+                  setEtapa("erro");
+                }}
               />
             </div>
           </div>

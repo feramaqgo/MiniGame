@@ -34,6 +34,9 @@ function embaralhar(): Carta[] {
 
 export default function MemoriaGame({ onWin }: MemoriaGameProps) {
   const inicioRef = useRef(performance.now()); // início da partida (placar)
+  /** Quantas vezes embaralhou — a Memória não tem derrota, então "recomeçar
+   * do zero" é o equivalente a perder uma tentativa. */
+  const tentativasRef = useRef(1);
   const [cartas, setCartas] = useState<Carta[]>(() => embaralhar());
   const [viradas, setViradas] = useState<number[]>([]); // índices atualmente virados (não encontrados)
   const [encontradas, setEncontradas] = useState<Set<string>>(new Set());
@@ -45,6 +48,7 @@ export default function MemoriaGame({ onWin }: MemoriaGameProps) {
   const venceu = encontradas.size === PARES.length;
 
   const reiniciar = () => {
+    tentativasRef.current += 1;
     setCartas(embaralhar());
     setViradas([]);
     setEncontradas(new Set());
@@ -91,7 +95,11 @@ export default function MemoriaGame({ onWin }: MemoriaGameProps) {
   useEffect(() => {
     if (venceu) {
       sfx.vitoria();
-      registrarScore("memoria", performance.now() - inicioRef.current, movimentos);
+      registrarScore("memoria", {
+        tempoMs: performance.now() - inicioRef.current,
+        tentativas: tentativasRef.current,
+        jogadas: movimentos,
+      });
       const t = setTimeout(onWin, 1400);
       return () => clearTimeout(t);
     }

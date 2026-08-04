@@ -8,7 +8,10 @@ import { Loader2 } from "lucide-react";
 import Confetti from "./Confetti";
 
 interface GameProps {
-  onGoal: () => void;
+  /** `margem` = distância entre a mira e o goleiro no instante do chute.
+   * É o que mede o timing real do jogador (quanto maior, mais seguro foi o
+   * chute), e vira a nota de habilidade no placar. */
+  onGoal: (margem: number) => void;
   onMiss: () => void;
 }
 
@@ -195,7 +198,7 @@ export default function Game({ onGoal, onMiss }: GameProps) {
 
       setTimeout(() => {
         if (isGoal) {
-          onGoal();
+          onGoal(Math.abs(finalX - rhinoFinalX));
         } else {
           onMiss();
         }

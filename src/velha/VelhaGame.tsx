@@ -43,14 +43,18 @@ function jogadaVitoriosa(b: Marca[], marca: Marca): number | null {
   return null;
 }
 
-// IA propositalmente vencível: sempre fecha se puder, mas só bloqueia o
-// jogador com ~50% de chance — então dá pra ganhar tentando de novo.
+// IA vencível, mas atenta: sempre fecha se puder e bloqueia o jogador na
+// maioria das vezes. O jogo continua "sempre ganhável" (é só tentar de novo),
+// só que vencer passou a ter mérito de verdade — o placar conta tentativas,
+// então uma IA que erra demais tornaria a Velha a rota fácil pro topo.
+const CHANCE_BLOQUEIO = 0.75;
+
 function jogadaDaMaquina(b: Marca[]): number {
   const ganhar = jogadaVitoriosa(b, "O");
   if (ganhar !== null) return ganhar;
 
   const bloquear = jogadaVitoriosa(b, "X");
-  if (bloquear !== null && Math.random() < 0.5) return bloquear;
+  if (bloquear !== null && Math.random() < CHANCE_BLOQUEIO) return bloquear;
 
   const livres = vazias(b);
   // leve preferência pelo centro pra parecer que "joga"
@@ -66,8 +70,10 @@ export default function VelhaGame({ onWin }: VelhaGameProps) {
   const timeoutRef = useRef<number | null>(null);
   const inicioRef = useRef(performance.now()); // início da partida (placar)
   const jogadasRef = useRef(0); // jogadas do visitante, pro placar
+  const tentativasRef = useRef(1); // em qual tentativa a pessoa está
 
   const reiniciar = () => {
+    tentativasRef.current += 1;
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setBoard(Array(9).fill(null));
     setEstado("jogando");
@@ -117,7 +123,11 @@ export default function VelhaGame({ onWin }: VelhaGameProps) {
   useEffect(() => {
     if (estado === "venceu") {
       sfx.vitoria();
-      registrarScore("velha", performance.now() - inicioRef.current, jogadasRef.current);
+      registrarScore("velha", {
+        tempoMs: performance.now() - inicioRef.current,
+        tentativas: tentativasRef.current,
+        jogadas: jogadasRef.current,
+      });
       const t = setTimeout(onWin, 1500);
       return () => clearTimeout(t);
     } else if (estado === "perdeu" || estado === "empate") {
