@@ -1,5 +1,6 @@
 import { ArrowRight, Brain, Cable, Grid3x3, RotateCcw, Target } from "lucide-react";
 import { sfx } from "../../shared/lib/sfx";
+import Placar from "./Placar";
 
 interface RecepcaoScreenProps {
   nome: string | null;
@@ -39,7 +40,7 @@ export default function RecepcaoScreen({ nome, onCancelar }: RecepcaoScreenProps
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center py-10 px-6 relative overflow-hidden">
-      <div className="max-w-4xl w-full space-y-8 relative z-10">
+      <div className="max-w-6xl w-full space-y-8 relative z-10">
         {/* Rino + balão de fala */}
         <div className="flex items-center justify-center gap-4 md:gap-6 animate-[entrar_0.5s_ease-out]">
           <img
@@ -57,32 +58,37 @@ export default function RecepcaoScreen({ nome, onCancelar }: RecepcaoScreenProps
           </div>
         </div>
 
-        {/* Menu de jogos */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
-          {jogos.map((jogo, i) => {
-            const Icon = jogo.icon;
-            return (
-              <a
-                key={jogo.href}
-                href={jogo.href}
-                onClick={() => sfx.click()}
-                style={{ animationDelay: `${0.1 + i * 0.08}s` }}
-                className="group relative overflow-hidden card-arcade rounded-2xl p-5 md:p-6 pt-6 md:pt-7 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_50px_-20px_rgba(43,38,33,0.5)] flex items-center gap-4 opacity-0 animate-[entrar_0.4s_ease-out_forwards]"
-              >
-                <div className="faixa-perigo absolute top-0 inset-x-0 h-1.5" />
-                <div className="w-14 h-14 rounded-xl bg-[#FF6801]/12 flex items-center justify-center shrink-0">
-                  <Icon className="w-7 h-7 text-[#FF6801]" />
-                </div>
-                <div className="flex-1 space-y-1">
-                  <h2 className="font-display text-lg md:text-xl uppercase tracking-tight font-bold text-[#23201B]">
-                    {jogo.titulo}
-                  </h2>
-                  <p className="font-sans text-sm text-[#4A4438] leading-snug">{jogo.descricao}</p>
-                </div>
-                <ArrowRight className="w-5 h-5 text-[#FF6801] group-hover:translate-x-1 transition-transform shrink-0" />
-              </a>
-            );
-          })}
+        {/* Jogos à esquerda, placar à direita — no tablet os dois cabem lado
+            a lado, e quem está escolhendo o jogo já vê quem está ganhando. */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1.35fr_1fr] gap-5 items-start">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {jogos.map((jogo, i) => {
+              const Icon = jogo.icon;
+              return (
+                <a
+                  key={jogo.href}
+                  href={jogo.href}
+                  onClick={() => sfx.click()}
+                  style={{ animationDelay: `${0.1 + i * 0.08}s` }}
+                  className="group relative overflow-hidden card-arcade rounded-2xl p-5 pt-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_50px_-20px_rgba(43,38,33,0.5)] flex items-center gap-4 opacity-0 animate-[entrar_0.4s_ease-out_forwards]"
+                >
+                  <div className="faixa-perigo absolute top-0 inset-x-0 h-1.5" />
+                  <div className="w-14 h-14 rounded-xl bg-[#FF6801]/12 flex items-center justify-center shrink-0">
+                    <Icon className="w-7 h-7 text-[#FF6801]" />
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <h2 className="font-display text-lg uppercase tracking-tight font-bold text-[#23201B]">
+                      {jogo.titulo}
+                    </h2>
+                    <p className="font-sans text-sm text-[#4A4438] leading-snug">{jogo.descricao}</p>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-[#FF6801] group-hover:translate-x-1 transition-transform shrink-0" />
+                </a>
+              );
+            })}
+          </div>
+
+          <Placar />
         </div>
 
         <button

@@ -6,6 +6,8 @@ import BotaoInstalar from "../../shared/components/BotaoInstalar";
 
 interface QrScreenProps {
   onJaEscaneei: () => void;
+  /** Equipe: abre o encerramento com o campeão do dia. */
+  onVerCampeao: () => void;
 }
 
 const passos = [
@@ -15,7 +17,7 @@ const passos = [
 ];
 
 /** Tela de descanso do tablet: QR gigante convidando o visitante. */
-export default function QrScreen({ onJaEscaneei }: QrScreenProps) {
+export default function QrScreen({ onJaEscaneei, onVerCampeao }: QrScreenProps) {
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -99,7 +101,20 @@ export default function QrScreen({ onJaEscaneei }: QrScreenProps) {
             Já escaneei →
           </button>
 
-          <BotaoInstalar variante="discreto" />
+          <div className="flex flex-col items-center gap-1">
+            <BotaoInstalar variante="discreto" />
+            {/* Discreto de propósito: é da equipe, não do visitante. */}
+            <button
+              onClick={() => {
+                sfx.click();
+                onVerCampeao();
+              }}
+              className="inline-flex items-center gap-1.5 font-sans text-[10px] uppercase tracking-widest text-[#a89e86] hover:text-[#FF6801] transition-colors cursor-pointer px-3 py-2"
+            >
+              <Trophy className="w-3 h-3" />
+              Campeão do dia
+            </button>
+          </div>
         </div>
       </div>
 

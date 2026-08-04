@@ -1,6 +1,7 @@
 import { useEffect, useCallback, useRef, useState } from "react";
-import { RotateCcw, Trophy, ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { Hand, RotateCcw, Trophy } from "lucide-react";
 import { sfx } from "../shared/lib/sfx";
+import { registrarScore } from "../shared/lib/score";
 
 const GRID = 13; // células por lado (menos células = mais fáceis de mirar)
 const SIZE = 390; // tamanho lógico do canvas (px)
@@ -32,6 +33,7 @@ export default function MangoteGame({ onWin }: MangoteGameProps) {
   estadoRef.current = estado;
   const scoreRef = useRef(0);
   const pulseRef = useRef(0); // brilho pulsante da comida
+  const inicioRef = useRef(0); // instante em que a partida começou (placar)
 
   const novaComida = useCallback(() => {
     const MARGEM = 2;
@@ -194,6 +196,7 @@ export default function MangoteGame({ onWin }: MangoteGameProps) {
       if (novoScore >= ALVO) {
         sfx.vitoria();
         setEstado("venceu");
+        registrarScore("cobrinha", performance.now() - inicioRef.current);
         desenhar();
         return;
       }
@@ -213,6 +216,7 @@ export default function MangoteGame({ onWin }: MangoteGameProps) {
     nextDirRef.current = { x: 1, y: 0 };
     scoreRef.current = 0;
     setScore(0);
+    inicioRef.current = performance.now();
     novaComida();
     setEstado("jogando");
     desenhar();
@@ -269,46 +273,79 @@ export default function MangoteGame({ onWin }: MangoteGameProps) {
     return () => window.removeEventListener("keydown", onKey);
   }, [iniciar, mudarDirecao]);
 
-  // Swipe contínuo na tela INTEIRA do jogo: a cada ~28px de arrasto a direção
-  // muda e o ponto de referência reinicia — dá pra "pilotar" o mangote sem
-  // tirar o dedo da tela, em qualquer lugar (não só no tabuleiro).
+  // ------------------------------------------------------------------
+  // Controles de toque — pensados pra tablet em pé no balcão.
+  //
+  // 1. TOCAR: onde o dedo encosta no tabuleiro define a direção, comparando
+  //    com a posição atual da cabeça. Tocou acima da cabeça? sobe. À
+  //    direita? vira à direita. O alvo é a tela inteira, então é impossível
+  //    "errar o botão" — era o problema do d-pad.
+  // 2. DESLIZAR: arrastar o dedo continua virando a cada ~30px, pra quem
+  //    prefere pilotar sem levantar o dedo.
+  // ------------------------------------------------------------------
+  const boardRef = useRef<HTMLDivElement | null>(null);
+  const arrastou = useRef(false);
   const touchStart = useRef<{ x: number; y: number } | null>(null);
-  const SWIPE_PASSO = 28;
+  const [toque, setToque] = useState<{ x: number; y: number; id: number } | null>(null);
+  const toqueId = useRef(0);
+  const SWIPE_PASSO = 30;
+
+  /** Converte um ponto da tela em direção, relativo à cabeça do mangote. */
+  const dirigirPara = (clientX: number, clientY: number) => {
+    const board = boardRef.current;
+    const cabeca = snakeRef.current[0];
+    if (!board || !cabeca) return;
+
+    const r = board.getBoundingClientRect();
+    const celula = r.width / GRID;
+    const cabecaX = r.left + (cabeca.x + 0.5) * celula;
+    const cabecaY = r.top + (cabeca.y + 0.5) * celula;
+
+    const dx = clientX - cabecaX;
+    const dy = clientY - cabecaY;
+    // Toque quase em cima da cabeça não tem direção clara — ignora.
+    if (Math.abs(dx) < celula * 0.4 && Math.abs(dy) < celula * 0.4) return;
+
+    if (Math.abs(dx) > Math.abs(dy)) mudarDirecao(dx > 0 ? 1 : -1, 0);
+    else mudarDirecao(0, dy > 0 ? 1 : -1);
+    sfx.tick();
+
+    // Marca visual de onde o dedo encostou (some sozinha).
+    const id = ++toqueId.current;
+    setToque({ x: clientX - r.left, y: clientY - r.top, id });
+    window.setTimeout(() => {
+      setToque((t) => (t?.id === id ? null : t));
+    }, 420);
+  };
+
   const aplicarSwipe = (cx: number, cy: number) => {
     if (!touchStart.current) return;
     const dx = cx - touchStart.current.x;
     const dy = cy - touchStart.current.y;
     if (Math.abs(dx) < SWIPE_PASSO && Math.abs(dy) < SWIPE_PASSO) return;
+    arrastou.current = true;
     if (Math.abs(dx) > Math.abs(dy)) mudarDirecao(dx > 0 ? 1 : -1, 0);
     else mudarDirecao(0, dy > 0 ? 1 : -1);
     touchStart.current = { x: cx, y: cy };
   };
-  const onTouchStart = (e: React.TouchEvent) => {
-    const t = e.touches[0];
-    touchStart.current = { x: t.clientX, y: t.clientY };
-  };
-  const onTouchMove = (e: React.TouchEvent) => {
-    const t = e.touches[0];
-    aplicarSwipe(t.clientX, t.clientY);
-  };
-  const onTouchEnd = (e: React.TouchEvent) => {
-    const t = e.changedTouches[0];
-    aplicarSwipe(t.clientX, t.clientY);
-    touchStart.current = null;
-  };
 
-  const dpad = (nx: number, ny: number) => {
-    sfx.click();
-    mudarDirecao(nx, ny);
+  const onPointerDown = (e: React.PointerEvent) => {
+    touchStart.current = { x: e.clientX, y: e.clientY };
+    arrastou.current = false;
+  };
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (!touchStart.current) return;
+    aplicarSwipe(e.clientX, e.clientY);
+  };
+  const onPointerUp = (e: React.PointerEvent) => {
+    // Só vira "toque" se o dedo praticamente não andou; senão já foi swipe.
+    if (!arrastou.current) dirigirPara(e.clientX, e.clientY);
+    touchStart.current = null;
+    arrastou.current = false;
   };
 
   return (
-    <div
-      className="w-full max-w-md mx-auto flex flex-col items-center gap-5 touch-none select-none"
-      onTouchStart={onTouchStart}
-      onTouchMove={onTouchMove}
-      onTouchEnd={onTouchEnd}
-    >
+    <div className="w-full max-w-xl mx-auto flex flex-col items-center gap-4 touch-none select-none">
       {/* HUD */}
       <div className="w-full flex items-center justify-between px-1">
         <span className="font-display text-sm uppercase tracking-widest text-[#6E675C]">Concreto</span>
@@ -326,10 +363,29 @@ export default function MangoteGame({ onWin }: MangoteGameProps) {
         </div>
       </div>
 
-      {/* Tabuleiro — laje de concreto com moldura de canteiro */}
-      <div className="relative w-full max-w-[420px] aspect-square rounded-2xl p-1.5 shadow-xl faixa-perigo">
-        <div className="relative w-full h-full rounded-xl overflow-hidden border-2 border-[#1B1712]">
-          <canvas ref={canvasRef} className="w-full h-full block" />
+      {/* Tabuleiro — é a própria área de controle: tocar/deslizar aqui pilota */}
+      <div className="relative w-full max-w-[min(560px,72vh)] aspect-square rounded-2xl p-1.5 shadow-xl faixa-perigo">
+        <div
+          ref={boardRef}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={() => {
+            touchStart.current = null;
+            arrastou.current = false;
+          }}
+          className="relative w-full h-full rounded-xl overflow-hidden border-2 border-[#1B1712] cursor-pointer"
+        >
+          <canvas ref={canvasRef} className="w-full h-full block pointer-events-none" />
+
+          {/* Onda no ponto tocado — confirma que o toque foi lido */}
+          {toque && (
+            <span
+              key={toque.id}
+              className="absolute w-16 h-16 -ml-8 -mt-8 rounded-full border-2 border-[#FF6801] pointer-events-none animate-[toque-onda_0.42s_ease-out_forwards]"
+              style={{ left: toque.x, top: toque.y }}
+            />
+          )}
 
           {estado === "perdeu" && (
             <div className="absolute inset-0 bg-black/65 flex flex-col items-center justify-center gap-4 text-center p-6">
@@ -360,56 +416,21 @@ export default function MangoteGame({ onWin }: MangoteGameProps) {
         </div>
       </div>
 
-      {/* Dica + D-pad grande (dedão de tablet) */}
       {estado === "jogando" && (
-        <>
-          <p className="font-sans text-xs uppercase tracking-widest text-[#8A8375] -mb-1">
-            Deslize na tela ou use as setas
+        <div className="flex items-center gap-2.5 text-[#6E675C]">
+          <Hand className="w-4 h-4 text-[#FF6801]" />
+          <p className="font-sans text-xs md:text-sm uppercase tracking-widest">
+            Toque para onde quer ir — ou deslize
           </p>
-          <div className="grid grid-cols-3 gap-4 w-72 md:w-80 select-none">
-            <div />
-            <DPad onPress={() => dpad(0, -1)} label="Cima">
-              <ChevronUp className="w-11 h-11" strokeWidth={2.5} />
-            </DPad>
-            <div />
-            <DPad onPress={() => dpad(-1, 0)} label="Esquerda">
-              <ChevronLeft className="w-11 h-11" strokeWidth={2.5} />
-            </DPad>
-            <DPad onPress={() => dpad(0, 1)} label="Baixo">
-              <ChevronDown className="w-11 h-11" strokeWidth={2.5} />
-            </DPad>
-            <DPad onPress={() => dpad(1, 0)} label="Direita">
-              <ChevronRight className="w-11 h-11" strokeWidth={2.5} />
-            </DPad>
-          </div>
-        </>
+        </div>
       )}
-    </div>
-  );
-}
 
-function DPad({
-  onPress,
-  label,
-  children,
-}: {
-  onPress: () => void;
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      // pointerdown responde no TOQUE (click só dispara ao soltar — lento
-      // demais pra jogo); stopPropagation evita virar swipe do wrapper.
-      onPointerDown={(e) => {
-        e.stopPropagation();
-        onPress();
-      }}
-      onTouchStart={(e) => e.stopPropagation()}
-      aria-label={label}
-      className="aspect-square rounded-2xl bg-[#FDFBF6] border-2 border-black/10 text-[#23201B] flex items-center justify-center shadow-[0_6px_16px_-6px_rgba(43,38,33,0.4)] active:bg-[#FF6801] active:text-white active:border-[#C24E00] active:scale-90 transition-all duration-100 cursor-pointer"
-    >
-      {children}
-    </button>
+      <style>{`
+        @keyframes toque-onda {
+          0% { transform: scale(0.5); opacity: 0.9; }
+          100% { transform: scale(1.7); opacity: 0; }
+        }
+      `}</style>
+    </div>
   );
 }

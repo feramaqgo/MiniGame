@@ -3,11 +3,12 @@ import SenhaScreen from "./components/SenhaScreen";
 import QrScreen from "./components/QrScreen";
 import CodigoScreen from "./components/CodigoScreen";
 import RecepcaoScreen from "./components/RecepcaoScreen";
+import CampeaoScreen from "./components/CampeaoScreen";
 import { getTabletSenha, clearTabletSenha } from "../shared/lib/tablet";
 import { clearSession, saveSession } from "../shared/lib/session";
 import { ArcadeSession } from "../shared/types";
 
-type Etapa = "bloqueado" | "qr" | "codigo" | "recepcao";
+type Etapa = "bloqueado" | "qr" | "codigo" | "recepcao" | "campeao";
 
 /**
  * Tela do tablet do estande — ciclo de um visitante:
@@ -51,7 +52,12 @@ export default function App() {
     case "bloqueado":
       return <SenhaScreen onDesbloqueado={() => setEtapa("qr")} />;
     case "qr":
-      return <QrScreen onJaEscaneei={() => setEtapa("codigo")} />;
+      return (
+        <QrScreen
+          onJaEscaneei={() => setEtapa("codigo")}
+          onVerCampeao={() => setEtapa("campeao")}
+        />
+      );
     case "codigo":
       return (
         <CodigoScreen
@@ -67,5 +73,7 @@ export default function App() {
           onCancelar={() => setEtapa("qr")}
         />
       );
+    case "campeao":
+      return <CampeaoScreen onVoltar={() => setEtapa("qr")} />;
   }
 }

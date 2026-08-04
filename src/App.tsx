@@ -7,6 +7,7 @@ import { useState, useEffect, useRef } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 import { Etapa } from "./types";
 import { requireSession } from "./shared/lib/session";
+import { registrarScore } from "./shared/lib/score";
 import HeroScreen from "./components/HeroScreen";
 import InstrucaoScreen from "./components/InstrucaoScreen";
 import Game from "./components/Game";
@@ -16,6 +17,7 @@ import { StoryScreen } from "./shared/components/StoryScreen";
 export default function App() {
   const [etapa, setEtapa] = useState<Etapa>("story");
   const [sessionChecked, setSessionChecked] = useState(false);
+  const inicioRef = useRef(performance.now()); // início da partida (placar)
 
   // Background music — starts on the first user click (browsers block audio
   // with sound until there's a user gesture), loops for the rest of the flow.
@@ -72,7 +74,15 @@ export default function App() {
           />
         );
       case "instrucao":
-        return <InstrucaoScreen onAdvance={() => setEtapa("jogando")} />;
+        return (
+          <InstrucaoScreen
+            onAdvance={() => {
+              // Cronômetro do placar começa quando o campo aparece.
+              inicioRef.current = performance.now();
+              setEtapa("jogando");
+            }}
+          />
+        );
       case "jogando":
         return (
           <div className="w-full min-h-screen flex flex-col justify-center py-12 px-4 md:px-12 relative overflow-hidden">
@@ -90,7 +100,10 @@ export default function App() {
                 <span>ACERTE O GOL E GANHE UM PRÊMIO</span>
               </h2>
               <Game
-                onGoal={() => {
+                onGoal={async () => {
+                  // Grava o placar antes de sair da página; se falhar, segue
+                  // pra roleta do mesmo jeito.
+                  await registrarScore("chute", performance.now() - inicioRef.current);
                   window.location.href = "/roleta";
                 }}
                 onMiss={() => setEtapa("erro")}

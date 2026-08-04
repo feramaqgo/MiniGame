@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Trophy, RotateCcw } from "lucide-react";
 import { sfx } from "../shared/lib/sfx";
+import { registrarScore } from "../shared/lib/score";
 
 type Marca = "X" | "O" | null;
 type Estado = "jogando" | "venceu" | "perdeu" | "empate";
@@ -63,6 +64,8 @@ export default function VelhaGame({ onWin }: VelhaGameProps) {
   const [linhaVit, setLinhaVit] = useState<number[] | null>(null);
   const [pensando, setPensando] = useState(false);
   const timeoutRef = useRef<number | null>(null);
+  const inicioRef = useRef(performance.now()); // início da partida (placar)
+  const jogadasRef = useRef(0); // jogadas do visitante, pro placar
 
   const reiniciar = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -70,6 +73,8 @@ export default function VelhaGame({ onWin }: VelhaGameProps) {
     setEstado("jogando");
     setLinhaVit(null);
     setPensando(false);
+    inicioRef.current = performance.now();
+    jogadasRef.current = 0;
   };
 
   const finalizar = useCallback((b: Marca[]): boolean => {
@@ -90,6 +95,7 @@ export default function VelhaGame({ onWin }: VelhaGameProps) {
     if (estado !== "jogando" || pensando || board[i]) return;
 
     sfx.click();
+    jogadasRef.current += 1;
     const apos = [...board];
     apos[i] = "X";
     setBoard(apos);
@@ -111,6 +117,7 @@ export default function VelhaGame({ onWin }: VelhaGameProps) {
   useEffect(() => {
     if (estado === "venceu") {
       sfx.vitoria();
+      registrarScore("velha", performance.now() - inicioRef.current, jogadasRef.current);
       const t = setTimeout(onWin, 1500);
       return () => clearTimeout(t);
     } else if (estado === "perdeu" || estado === "empate") {

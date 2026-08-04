@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Check, Trophy, RotateCcw } from "lucide-react";
 import { sfx } from "../shared/lib/sfx";
+import { registrarScore } from "../shared/lib/score";
 
 interface MemoriaGameProps {
   onWin: () => void;
@@ -32,6 +33,7 @@ function embaralhar(): Carta[] {
 }
 
 export default function MemoriaGame({ onWin }: MemoriaGameProps) {
+  const inicioRef = useRef(performance.now()); // início da partida (placar)
   const [cartas, setCartas] = useState<Carta[]>(() => embaralhar());
   const [viradas, setViradas] = useState<number[]>([]); // índices atualmente virados (não encontrados)
   const [encontradas, setEncontradas] = useState<Set<string>>(new Set());
@@ -49,6 +51,7 @@ export default function MemoriaGame({ onWin }: MemoriaGameProps) {
     setMovimentos(0);
     setTravado(false);
     setUltimoPar(null);
+    inicioRef.current = performance.now();
   };
 
   const clicar = (indice: number) => {
@@ -88,9 +91,13 @@ export default function MemoriaGame({ onWin }: MemoriaGameProps) {
   useEffect(() => {
     if (venceu) {
       sfx.vitoria();
+      registrarScore("memoria", performance.now() - inicioRef.current, movimentos);
       const t = setTimeout(onWin, 1400);
       return () => clearTimeout(t);
     }
+    // `movimentos` de propósito fora das deps: o placar é gravado uma vez só,
+    // no instante da vitória.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [venceu, onWin]);
 
   return (
