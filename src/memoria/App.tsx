@@ -4,10 +4,12 @@ import { ArrowRight, Brain } from "lucide-react";
 import MemoriaGame from "./MemoriaGame";
 import { requireSession } from "../shared/lib/session";
 import { sfx } from "../shared/lib/sfx";
+import { StoryScreen } from "../shared/components/StoryScreen";
+import { MusicHUD } from "../shared/components/MusicHUD";
 
 export default function App() {
   const [sessionChecked, setSessionChecked] = useState(false);
-  const [etapa, setEtapa] = useState<"intro" | "jogando">("intro");
+  const [etapa, setEtapa] = useState<"story" | "intro" | "jogando">("story");
 
   useEffect(() => {
     if (requireSession()) setSessionChecked(true);
@@ -17,7 +19,19 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center py-10 px-4 relative overflow-hidden">
-      {etapa === "intro" ? (
+      <MusicHUD src="/Música para o Jogo da Memória.mp3" />
+      {etapa === "story" ? (
+        <StoryScreen 
+          avatarSrc="/Rino para o Jogo da Memória.png"
+          lines={[
+            "Bem-vindo ao Jogo da Memória Feramaq!",
+            "Sua missão aqui é simples: encontre todos os pares de equipamentos.",
+            "Se você encontrar todos os 6 pares, eu libero o seu acesso pra roleta de prêmios.",
+            "Preparado?"
+          ]}
+          onComplete={() => setEtapa("intro")}
+        />
+      ) : etapa === "intro" ? (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

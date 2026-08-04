@@ -5,6 +5,8 @@ import { renderGoogleButton, decodeGooglePayload } from "../shared/lib/googleIde
 import { getSession, saveSession } from "../shared/lib/session";
 import { ArcadeSession } from "../shared/types";
 import { sfx } from "../shared/lib/sfx";
+import { StoryScreen } from "../shared/components/StoryScreen";
+import { MusicHUD } from "../shared/components/MusicHUD";
 
 interface GoogleStep {
   idToken: string;
@@ -46,18 +48,19 @@ const jogos = [
 
 export default function Hub() {
   const [session, setSession] = useState<ArcadeSession | null>(() => getSession());
+  const [etapa, setEtapa] = useState<"story" | "login" | "menu">("story");
   const [googleData, setGoogleData] = useState<GoogleStep | null>(null);
   const [celular, setCelular] = useState("");
   const [celularError, setCelularError] = useState<string | null>(null);
   const googleButtonRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (session || googleData || !googleButtonRef.current) return;
+    if (etapa !== "login" || session || googleData || !googleButtonRef.current) return;
     renderGoogleButton(googleButtonRef.current, (idToken) => {
       const decoded = decodeGooglePayload(idToken);
       setGoogleData({ idToken, ...decoded });
     }).catch((err) => console.error("Erro ao carregar login do Google:", err));
-  }, [session, googleData]);
+  }, [session, googleData, etapa]);
 
   const handleCelularChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCelular(formatarWhatsApp(e.target.value));
@@ -83,6 +86,7 @@ export default function Hub() {
     };
     saveSession(novaSessao);
     setSession(novaSessao);
+    setEtapa("menu");
   };
 
   // Botão demo: entra sem login real, só pra testar/mostrar o fluxo.
@@ -97,14 +101,36 @@ export default function Hub() {
     };
     saveSession(demoSession);
     setSession(demoSession);
+    setEtapa("menu");
   };
 
   // ------------------------------------------------------------------
-  // Tela 1: login
+  // Tela 1: Storytelling
   // ------------------------------------------------------------------
-  if (!session) {
+  if (etapa === "story") {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center py-12 px-4 relative overflow-hidden">
+        <MusicHUD src="/Música para o Hub (Menu).mp3" />
+        <StoryScreen
+          avatarSrc="/Rino para o Menu Inicial (Hub).png"
+          lines={[
+            "Olá! Eu sou o Rino, mascote da Feramaq! Bem-vindo à Concrete Show!",
+            "Aqui no nosso estande você tem a chance de ganhar brindes incríveis girando a nossa roleta da sorte.",
+            "Mas antes de girar, você precisa vencer um dos nossos desafios! Escolha seu jogo favorito, vença e nos vemos lá na roleta!"
+          ]}
+          onComplete={() => setEtapa(session ? "menu" : "login")}
+        />
+      </div>
+    );
+  }
+
+  // ------------------------------------------------------------------
+  // Tela 2: login
+  // ------------------------------------------------------------------
+  if (etapa === "login" || !session) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center py-12 px-4 relative overflow-hidden">
+        <MusicHUD src="/Música para o Hub (Menu).mp3" />
         <div className="max-w-md w-full card-arcade rounded-3xl p-6 md:p-8 pt-8 text-center space-y-6 relative z-10 overflow-hidden">
           <div className="faixa-perigo absolute top-0 inset-x-0 h-2.5" />
           <div className="inline-flex items-center gap-2 bg-[#FF6801] text-white px-4 py-1.5 rounded-full font-display text-xs font-bold uppercase tracking-wider mx-auto">
@@ -181,10 +207,11 @@ export default function Hub() {
   }
 
   // ------------------------------------------------------------------
-  // Tela 2: menu de jogos
+  // Tela 3: menu de jogos
   // ------------------------------------------------------------------
   return (
     <div className="min-h-screen flex flex-col items-center justify-center py-12 px-4 relative overflow-hidden">
+      <MusicHUD src="/Música para o Hub (Menu).mp3" />
       <div className="max-w-2xl w-full space-y-8 relative z-10">
         <div className="text-center space-y-3">
           <div className="inline-flex items-center gap-2 bg-[#FF6801] text-white px-4 py-1.5 rounded-full font-display text-xs font-bold uppercase tracking-wider">

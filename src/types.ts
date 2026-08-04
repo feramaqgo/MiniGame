@@ -3,4 +3,4 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-export type Etapa = "hero" | "instrucao" | "jogando" | "erro";
+export type Etapa = "story" | "hero" | "instrucao" | "jogando" | "erro";
