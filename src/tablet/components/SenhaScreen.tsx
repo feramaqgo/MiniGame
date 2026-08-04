@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Lock, Unlock } from "lucide-react";
 import { saveTabletSenha } from "../../shared/lib/tablet";
 import { sfx } from "../../shared/lib/sfx";
+import BotaoInstalar from "../../shared/components/BotaoInstalar";
 
 interface SenhaScreenProps {
   onDesbloqueado: () => void;
@@ -94,6 +95,10 @@ export default function SenhaScreen({ onDesbloqueado }: SenhaScreenProps) {
             <span>{validando ? "Validando..." : "Ativar tablet"}</span>
           </button>
         </form>
+
+        {/* Só aparece se o navegador oferecer instalação — é o momento certo
+            de instalar: a equipe está montando o tablet agora. */}
+        <BotaoInstalar />
       </div>
     </div>
   );

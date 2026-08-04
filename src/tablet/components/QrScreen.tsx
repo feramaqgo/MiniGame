@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import { Gift, ScanLine, Smartphone, Trophy } from "lucide-react";
 import { sfx } from "../../shared/lib/sfx";
+import BotaoInstalar from "../../shared/components/BotaoInstalar";
 
 interface QrScreenProps {
   testMode: boolean;
@@ -103,6 +104,8 @@ export default function QrScreen({ testMode, onJaEscaneei }: QrScreenProps) {
           >
             Já escaneei →
           </button>
+
+          <BotaoInstalar variante="discreto" />
         </div>
       </div>
 

@@ -1,0 +1,55 @@
+{
+  "name": "Arcade Feramaq — Concreteshow",
+  "short_name": "Arcade Feramaq",
+  "description": "Jogos e roleta de prêmios do estande da Feramaq na Concreteshow.",
+  "start_url": "/tablet",
+  "scope": "/",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "any",
+  "background_color": "#E7E1D5",
+  "theme_color": "#FF6801",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Tela do tablet",
+      "short_name": "Tablet",
+      "description": "QR code e entrada de código do estande",
+      "url": "/tablet"
+    },
+    {
+      "name": "Cadastro do visitante",
+      "short_name": "Cadastro",
+      "description": "Tela de login e código (celular)",
+      "url": "/"
+    },
+    {
+      "name": "Estoque de brindes",
+      "short_name": "Estoque",
+      "description": "Painel da equipe com o estoque ao vivo",
+      "url": "/roleta/admin"
+    }
+  ]
+}
