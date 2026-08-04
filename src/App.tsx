@@ -11,9 +11,10 @@ import HeroScreen from "./components/HeroScreen";
 import InstrucaoScreen from "./components/InstrucaoScreen";
 import Game from "./components/Game";
 import ErroScreen from "./components/ErroScreen";
+import { StoryScreen } from "./shared/components/StoryScreen";
 
 export default function App() {
-  const [etapa, setEtapa] = useState<Etapa>("hero");
+  const [etapa, setEtapa] = useState<Etapa>("story");
   const [sessionChecked, setSessionChecked] = useState(false);
 
   // Background music — starts on the first user click (browsers block audio
@@ -48,6 +49,19 @@ export default function App() {
   // Render the current screen based on the single state `etapa`
   const renderScreen = () => {
     switch (etapa) {
+      case "story":
+        return (
+          <div className="w-full flex justify-center py-10 px-4 mt-8 md:mt-20">
+            <StoryScreen 
+              lines={[
+                "Hora de testar sua pontaria!",
+                "Na obra, precisão é tudo. Aqui também. Você precisa fazer um belo gol.",
+                "Mire direitinho, se acertar na rede, o acesso à roleta de prêmios é seu!"
+              ]}
+              onComplete={() => setEtapa("hero")}
+            />
+          </div>
+        );
       case "hero":
         return (
           <HeroScreen

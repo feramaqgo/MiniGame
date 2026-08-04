@@ -3,6 +3,7 @@ import { Etapa, Prize } from "./types";
 import ResgatarScreen from "./components/ResgatarScreen";
 import GirandoScreen from "./components/GirandoScreen";
 import ResultadoScreen from "./components/ResultadoScreen";
+import Confetti from "./components/Confetti";
 import JaParticipouScreen from "./components/JaParticipouScreen";
 import EsgotadoScreen from "./components/EsgotadoScreen";
 import ErroScreen from "./components/ErroScreen";
@@ -11,6 +12,8 @@ import { girarRoleta } from "./lib/girarRoleta";
 import { clearSession, getSession } from "../shared/lib/session";
 import { getTabletSenha } from "../shared/lib/tablet";
 import { ArcadeSession } from "../shared/types";
+import { StoryScreen } from "../shared/components/StoryScreen";
+import { MusicHUD } from "../shared/components/MusicHUD";
 
 // Prêmios fictícios usados quando o modo simulado (demo/?teste=1) não
 // consegue buscar os reais — a roleta nunca fica vazia numa demonstração.
@@ -24,7 +27,7 @@ const PREMIOS_DEMO: Prize[] = [
 ];
 
 export default function App() {
-  const [etapa, setEtapa] = useState<Etapa>("resgatar");
+  const [etapa, setEtapa] = useState<Etapa>("story_pre");
   const [prizes, setPrizes] = useState<Prize[]>([]);
   const [prizesLoaded, setPrizesLoaded] = useState(false);
   const [targetPrizeId, setTargetPrizeId] = useState<string | null>(null);
@@ -72,7 +75,9 @@ export default function App() {
       setPrizes(lista);
       setPrizesLoaded(true);
       if (result.ok && lista.length === 0) {
-        setEtapa((current) => (current === "resgatar" ? "esgotado" : current));
+        setEtapa((current) =>
+          current === "resgatar" || current === "story_pre" ? "esgotado" : current
+        );
       }
     });
   }, [testMode]);
@@ -137,6 +142,20 @@ export default function App() {
 
   const renderScreen = () => {
     switch (etapa) {
+      case "story_pre":
+        return (
+          <div className="w-full flex justify-center py-10 px-4 mt-8 md:mt-20">
+            <StoryScreen 
+              avatarSrc="/Rino para a Roleta (Antes de Girar - AnsiedadeSorte).png"
+              lines={[
+                "Aí sim! Você mandou muito bem no jogo e provou que é fera.",
+                "Chegou a melhor hora. A nossa roleta da sorte.",
+                "Cruze os dedos e gire a roleta. O que cair, é seu!"
+              ]}
+              onComplete={() => setEtapa("resgatar")}
+            />
+          </div>
+        );
       case "resgatar":
         return (
           <ResgatarScreen
@@ -154,8 +173,24 @@ export default function App() {
             key={spinNonce}
             prizes={prizes}
             targetPrizeId={targetPrizeId}
-            onSpinComplete={() => setEtapa("resultado")}
+            onSpinComplete={() => setEtapa("story_post")}
           />
+        );
+      case "story_post":
+        return (
+          <div className="w-full flex justify-center py-10 px-4 mt-8 md:mt-20">
+            <Confetti />
+            <StoryScreen 
+              avatarSrc="/Rino para a Roleta (Depois de Girar - Comemoração).png"
+              lines={[
+                "Uhuuu! Parabéns pelo prêmio!",
+                `Você ganhou: ${prizeGanho?.name || 'um prêmio especial'}!`,
+                "Agora é só chegar ali no nosso balcão, mostrar a próxima tela para um dos nossos atendentes e retirar o seu brinde.",
+                "Obrigado por jogar com a Feramaq e aproveite a Concrete Show!"
+              ]}
+              onComplete={() => setEtapa("resultado")}
+            />
+          </div>
         );
       case "resultado":
         return (
@@ -201,6 +236,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-transparent text-[#1A1208] relative">
+      <MusicHUD src="/Música para a Roleta.mp3" />
       {modoSimulado && (
         <div className="fixed top-3 left-1/2 -translate-x-1/2 z-50 bg-amber-500 text-black text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full shadow-lg pointer-events-none">
           ● {session?.demo ? "Modo demo" : "Modo teste"} — nada é salvo

@@ -4,10 +4,12 @@ import { ArrowRight, Grid3x3 } from "lucide-react";
 import VelhaGame from "./VelhaGame";
 import { requireSession } from "../shared/lib/session";
 import { sfx } from "../shared/lib/sfx";
+import { StoryScreen } from "../shared/components/StoryScreen";
+import { MusicHUD } from "../shared/components/MusicHUD";
 
 export default function App() {
   const [sessionChecked, setSessionChecked] = useState(false);
-  const [etapa, setEtapa] = useState<"intro" | "jogando">("intro");
+  const [etapa, setEtapa] = useState<"story" | "intro" | "jogando">("story");
 
   useEffect(() => {
     if (requireSession()) setSessionChecked(true);
@@ -17,7 +19,19 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center py-10 px-4 relative overflow-hidden">
-      {etapa === "intro" ? (
+      <MusicHUD src="/Música para o Jogo da Velha.mp3" />
+      {etapa === "story" ? (
+        <StoryScreen 
+          avatarSrc="/Rino para o Jogo da Velha.png"
+          lines={[
+            "Chegou a hora do clássico Jogo da Velha!",
+            "Você vai enfrentar o mestre das obras... eu mesmo! Hahaha.",
+            "Você precisa formar uma linha de 3 antes de mim. Se empatar, você pode tentar de novo.",
+            "Só quem vence gira a roleta. Vamos nessa!"
+          ]}
+          onComplete={() => setEtapa("intro")}
+        />
+      ) : etapa === "intro" ? (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -31,7 +45,7 @@ export default function App() {
           </div>
 
           <h1 className="font-display text-3xl md:text-4xl uppercase leading-tight tracking-tight font-bold text-[#23201B]">
-            Vença <span className="text-[#FF6801]">a máquina</span>
+            Vença <span className="text-[#FF6801]">o Rino</span>
           </h1>
 
           <p className="font-sans text-sm text-[#4A4438] leading-relaxed">

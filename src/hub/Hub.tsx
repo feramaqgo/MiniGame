@@ -5,6 +5,8 @@ import { renderGoogleButton, decodeGooglePayload } from "../shared/lib/googleIde
 import { clearSession, getSession, saveSession } from "../shared/lib/session";
 import { ArcadeSession } from "../shared/types";
 import { sfx } from "../shared/lib/sfx";
+import { StoryScreen } from "../shared/components/StoryScreen";
+import { MusicHUD } from "../shared/components/MusicHUD";
 import CodigoScreen from "./CodigoScreen";
 
 interface GoogleStep {
@@ -24,6 +26,7 @@ export default function Hub() {
     }
     return s;
   });
+  const [etapa, setEtapa] = useState<"story" | "login">("story");
   const [googleData, setGoogleData] = useState<GoogleStep | null>(null);
   const [celular, setCelular] = useState("");
   const [celularError, setCelularError] = useState<string | null>(null);
@@ -31,12 +34,12 @@ export default function Hub() {
   const googleButtonRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (session || googleData || !googleButtonRef.current) return;
+    if (etapa !== "login" || session || googleData || !googleButtonRef.current) return;
     renderGoogleButton(googleButtonRef.current, (idToken) => {
       const decoded = decodeGooglePayload(idToken);
       setGoogleData({ idToken, ...decoded });
     }).catch((err) => console.error("Erro ao carregar login do Google:", err));
-  }, [session, googleData]);
+  }, [session, googleData, etapa]);
 
   const handleCelularChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCelular(formatarWhatsApp(e.target.value));
@@ -121,20 +124,47 @@ export default function Hub() {
     setSession(null);
     setGoogleData(null);
     setCelular("");
+    setEtapa("login");
   };
 
   // ------------------------------------------------------------------
-  // Tela 2: código de participação (cadastro concluído)
+  // Tela 3: código de participação (cadastro concluído)
   // ------------------------------------------------------------------
   if (session) {
-    return <CodigoScreen session={session} onTrocarConta={trocarConta} />;
+    return (
+      <>
+        <MusicHUD src="/Música para o Hub (Menu).mp3" />
+        <CodigoScreen session={session} onTrocarConta={trocarConta} />
+      </>
+    );
   }
 
   // ------------------------------------------------------------------
-  // Tela 1: login
+  // Tela 1: storytelling do Rino
+  // ------------------------------------------------------------------
+  if (etapa === "story") {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center py-12 px-4 relative overflow-hidden">
+        <MusicHUD src="/Música para o Hub (Menu).mp3" />
+        <StoryScreen
+          avatarSrc="/Rino para o Menu Inicial (Hub).png"
+          lines={[
+            "Olá! Eu sou o Rino, mascote da Feramaq! Bem-vindo à Concrete Show!",
+            "Aqui no nosso estande você tem a chance de ganhar brindes incríveis girando a nossa roleta da sorte.",
+            "Faça seu cadastro rapidinho, pegue seu código e digite ele no tablet do estande pra escolher seu desafio. Vença e a roleta é sua!",
+          ]}
+          onComplete={() => setEtapa("login")}
+        />
+      </div>
+    );
+  }
+
+  // ------------------------------------------------------------------
+  // Tela 2: login
   // ------------------------------------------------------------------
   return (
     <div className="min-h-screen flex flex-col items-center justify-center py-12 px-4 relative overflow-hidden">
+      <MusicHUD src="/Música para o Hub (Menu).mp3" />
       <div className="max-w-md w-full card-arcade rounded-3xl p-6 md:p-8 pt-8 text-center space-y-6 relative z-10 overflow-hidden">
         <div className="faixa-perigo absolute top-0 inset-x-0 h-2.5" />
         <div className="inline-flex items-center gap-2 bg-[#FF6801] text-white px-4 py-1.5 rounded-full font-display text-xs font-bold uppercase tracking-wider mx-auto">
