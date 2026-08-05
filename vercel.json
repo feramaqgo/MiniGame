@@ -5,6 +5,7 @@
     { "source": "/memoria", "destination": "/memoria.html" },
     { "source": "/velha", "destination": "/velha.html" },
     { "source": "/tablet", "destination": "/tablet.html" },
+    { "source": "/menu5398", "destination": "/tablet.html" },
     { "source": "/roleta", "destination": "/roleta.html" },
     { "source": "/roleta/admin", "destination": "/roleta-admin.html" }
   ]

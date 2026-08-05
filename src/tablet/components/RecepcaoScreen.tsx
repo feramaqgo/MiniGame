@@ -1,10 +1,12 @@
-import { ArrowRight, Brain, Cable, Grid3x3, RotateCcw, Target } from "lucide-react";
+import { ArrowRight, Brain, Cable, Flame, Grid3x3, RotateCcw, Target } from "lucide-react";
 import { sfx } from "../../shared/lib/sfx";
 import Placar from "./Placar";
 
 interface RecepcaoScreenProps {
   nome: string | null;
   onCancelar: () => void;
+  /** Aberto pela rota secreta da equipe: nada é gravado. */
+  modoEquipe?: boolean;
 }
 
 const jogos = [
@@ -13,29 +15,33 @@ const jogos = [
     descricao: "Marque um gol de pênalti contra o Rino goleiro.",
     href: "/chute",
     icon: Target,
+    dificuldade: null,
   },
   {
     titulo: "Jogo da Memória",
     descricao: "Encontre os pares dos equipamentos Feramaq.",
     href: "/memoria",
     icon: Brain,
+    dificuldade: null,
   },
   {
     titulo: "Mangote de Concreto",
     descricao: "Guie o mangote e colete as porções de concreto.",
     href: "/cobrinha",
     icon: Cable,
+    dificuldade: "Difícil",
   },
   {
     titulo: "Jogo da Velha",
     descricao: "Vença a máquina no clássico da velha.",
     href: "/velha",
     icon: Grid3x3,
+    dificuldade: null,
   },
 ];
 
 /** Recepção do Rino: cumprimenta o visitante pelo nome e abre o menu. */
-export default function RecepcaoScreen({ nome, onCancelar }: RecepcaoScreenProps) {
+export default function RecepcaoScreen({ nome, onCancelar, modoEquipe }: RecepcaoScreenProps) {
   const primeiroNome = nome?.split(" ")[0] || "visitante";
 
   return (
@@ -53,7 +59,16 @@ export default function RecepcaoScreen({ nome, onCancelar }: RecepcaoScreenProps
               Olá, <span className="text-[#FF6801]">{primeiroNome}</span>! Eu sou o Rino! 🦏
             </p>
             <p className="font-sans text-sm md:text-base text-[#6B6048] mt-1">
-              Vença <span className="font-bold text-[#1A1208]">um jogo</span> e gire a roleta de prêmios!
+              {modoEquipe ? (
+                <>
+                  Modo equipe: jogue à vontade — <span className="font-bold text-[#1A1208]">nada é gravado</span>{" "}
+                  (sem placar e sem brinde).
+                </>
+              ) : (
+                <>
+                  Vença <span className="font-bold text-[#1A1208]">um jogo</span> e gire a roleta de prêmios!
+                </>
+              )}
             </p>
           </div>
         </div>
@@ -77,9 +92,17 @@ export default function RecepcaoScreen({ nome, onCancelar }: RecepcaoScreenProps
                     <Icon className="w-7 h-7 text-[#FF6801]" />
                   </div>
                   <div className="flex-1 space-y-1">
-                    <h2 className="font-display text-lg uppercase tracking-tight font-bold text-[#23201B]">
-                      {jogo.titulo}
-                    </h2>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h2 className="font-display text-lg uppercase tracking-tight font-bold text-[#23201B]">
+                        {jogo.titulo}
+                      </h2>
+                      {jogo.dificuldade && (
+                        <span className="inline-flex items-center gap-1 bg-[#C24E00] text-white text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0">
+                          <Flame className="w-2.5 h-2.5" />
+                          {jogo.dificuldade}
+                        </span>
+                      )}
+                    </div>
                     <p className="font-sans text-sm text-[#4A4438] leading-snug">{jogo.descricao}</p>
                   </div>
                   <ArrowRight className="w-5 h-5 text-[#FF6801] group-hover:translate-x-1 transition-transform shrink-0" />
@@ -96,7 +119,7 @@ export default function RecepcaoScreen({ nome, onCancelar }: RecepcaoScreenProps
             sfx.click();
             onCancelar();
           }}
-          className="mx-auto flex items-center gap-2 font-sans text-xs text-[#857a5e] uppercase tracking-widest hover:text-[#FF6801] transition-colors cursor-pointer"
+          className="mx-auto flex items-center gap-2 font-sans text-xs text-[#857a5e] uppercase tracking-widest hover:text-[#FF6801] transition-colors cursor-pointer px-3 py-2"
         >
           <RotateCcw className="w-3.5 h-3.5" />
           Novo visitante

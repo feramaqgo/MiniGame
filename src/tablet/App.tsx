@@ -6,6 +6,7 @@ import RecepcaoScreen from "./components/RecepcaoScreen";
 import CampeaoScreen from "./components/CampeaoScreen";
 import { getTabletSenha, clearTabletSenha } from "../shared/lib/tablet";
 import { clearSession, saveSession } from "../shared/lib/session";
+import { ROTA_EQUIPE } from "../shared/lib/vitoria";
 import { ArcadeSession } from "../shared/types";
 
 type Etapa = "bloqueado" | "qr" | "codigo" | "recepcao" | "campeao";
@@ -17,8 +18,33 @@ type Etapa = "bloqueado" | "qr" | "codigo" | "recepcao" | "campeao";
  * → roleta (gira pelo código) → prêmio → volta pro QR sozinho.
  */
 export default function App() {
-  const [etapa, setEtapa] = useState<Etapa>(() => (getTabletSenha() ? "qr" : "bloqueado"));
+  // Rota secreta da equipe: abre o menu direto, sem código de visitante.
+  // Serve pra demonstrar e testar os jogos — nada é gravado nesse modo
+  // (sem pontuação no placar, sem giro de roleta, sem gastar brinde).
+  const modoEquipe =
+    typeof window !== "undefined" && window.location.pathname.startsWith(ROTA_EQUIPE);
+
+  const [etapa, setEtapa] = useState<Etapa>(() => {
+    if (modoEquipe) return "recepcao";
+    return getTabletSenha() ? "qr" : "bloqueado";
+  });
   const [visitante, setVisitante] = useState<{ codigo: number; nome: string | null } | null>(null);
+
+  // Modo equipe precisa de uma sessão pra os jogos abrirem (eles exigem
+  // sessão de tablet), mas marcada como `equipe` pra não sujar nada.
+  useEffect(() => {
+    if (!modoEquipe) return;
+    saveSession({
+      idToken: "tablet",
+      celular: "tablet",
+      name: "Equipe Feramaq",
+      email: null,
+      picture: null,
+      codigo: 0,
+      tablet: true,
+      equipe: true,
+    });
+  }, [modoEquipe]);
 
   // Todo início de ciclo no QR limpa a sessão do visitante anterior.
   useEffect(() => {
@@ -69,8 +95,18 @@ export default function App() {
     case "recepcao":
       return (
         <RecepcaoScreen
-          nome={visitante?.nome ?? null}
-          onCancelar={() => setEtapa("qr")}
+          nome={modoEquipe ? "Equipe" : visitante?.nome ?? null}
+          modoEquipe={modoEquipe}
+          onCancelar={() => {
+            // Na rota da equipe não há ciclo de visitante pra reiniciar —
+            // sair de lá significa voltar pro fluxo normal do tablet.
+            if (modoEquipe) {
+              clearSession();
+              window.location.href = "/tablet";
+              return;
+            }
+            setEtapa("qr");
+          }}
         />
       );
     case "campeao":

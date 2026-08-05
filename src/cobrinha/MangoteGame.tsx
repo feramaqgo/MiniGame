@@ -45,6 +45,10 @@ export default function MangoteGame({ onWin }: MangoteGameProps) {
   // --- métricas do placar ---
   const tentativasRef = useRef(1); // em qual tentativa a pessoa está
   const passosRef = useRef(0); // passos realmente dados
+  /** Toques/mudanças de direção. Nos outros jogos cada clique já vira uma
+   * jogada contada; aqui não virava nada, então quem batia na tela sem
+   * pensar não era penalizado. Agora é. */
+  const toquesRef = useRef(0);
   /** Soma das distâncias mínimas (Manhattan) até cada porção. Comparado com
    * os passos dados, mede a eficiência da rota — assim a pontuação não
    * depende da sorte de a comida nascer perto. */
@@ -223,6 +227,7 @@ export default function MangoteGame({ onWin }: MangoteGameProps) {
           tentativas: tentativasRef.current,
           passos: passosRef.current,
           passosMinimos: passosMinimosRef.current,
+          toques: toquesRef.current,
         });
         desenhar();
         return;
@@ -248,6 +253,7 @@ export default function MangoteGame({ onWin }: MangoteGameProps) {
     // Zera as métricas da partida (as tentativas seguem acumulando).
     passosRef.current = 0;
     passosMinimosRef.current = 0;
+    toquesRef.current = 0;
     novaComida();
     setEstado("jogando");
     desenhar();
@@ -264,6 +270,7 @@ export default function MangoteGame({ onWin }: MangoteGameProps) {
     if (atual.x === -nx && atual.y === -ny) return;
     if (atual.x === nx && atual.y === ny) return;
     nextDirRef.current = { x: nx, y: ny };
+    toquesRef.current += 1; // só conta quando a direção realmente muda
     // Primeiro comando destrava o mangote e tira as setas de dica.
     setComecou(true);
   }, []);

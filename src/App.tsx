@@ -8,6 +8,7 @@ import { Volume2, VolumeX } from "lucide-react";
 import { Etapa } from "./types";
 import { requireSession } from "./shared/lib/session";
 import { registrarScore } from "./shared/lib/score";
+import { destinoAposVitoria } from "./shared/lib/vitoria";
 import HeroScreen from "./components/HeroScreen";
 import InstrucaoScreen from "./components/InstrucaoScreen";
 import Game from "./components/Game";
@@ -109,7 +110,7 @@ export default function App() {
                     tentativas: tentativasRef.current,
                     margem,
                   });
-                  window.location.href = "/roleta";
+                  window.location.href = destinoAposVitoria();
                 }}
                 onMiss={() => {
                   tentativasRef.current += 1; // errou: conta mais uma tentativa

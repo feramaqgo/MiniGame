@@ -4,6 +4,7 @@ import { ArrowRight, Brain } from "lucide-react";
 import MemoriaGame from "./MemoriaGame";
 import { requireSession } from "../shared/lib/session";
 import { sfx } from "../shared/lib/sfx";
+import { destinoAposVitoria } from "../shared/lib/vitoria";
 import { StoryScreen } from "../shared/components/StoryScreen";
 import { MusicHUD } from "../shared/components/MusicHUD";
 
@@ -69,7 +70,7 @@ export default function App() {
           </p>
         </motion.div>
       ) : (
-        <MemoriaGame onWin={() => (window.location.href = "/roleta")} />
+        <MemoriaGame onWin={() => (window.location.href = destinoAposVitoria())} />
       )}
     </div>
   );

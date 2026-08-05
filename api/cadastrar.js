@@ -108,14 +108,20 @@ export default async function handler(req, res) {
       const leadPayload = {
         webhook_id: participantId,
         name: google.name,
+        email: google.email,
         phone: celular,
-        lead_source: "feramaq-roleta",
-        lead_tag: "LEAD-EVENTO",
-        campanha: "Roleta Concreteshow",
+        // Marca de origem do arcade. É o campo que o CRM NÃO sobrescreve —
+        // `lead_tag` é reescrito pelo trigger assign_lead_round_robin, que
+        // força LEAD-MKT/LEAD-REPETIDO, então não adianta marcar por lá.
+        lead_source: "feramaq-minigame",
+        // `campanha` é o que roteia o pipeline no trigger: "feiras" joga o
+        // lead no funil "Concrete Show" em vez do funil padrão de vendedor.
+        campanha: "feiras",
         lead_details: {
           id: participantId,
           timestamp: new Date().toISOString(),
-          event: "Roleta Concreteshow",
+          event: "MiniGame Concreteshow",
+          tag: "MiniGame",
           codigo_participacao: codigo,
           dados_do_lead: {
             nome: google.name,

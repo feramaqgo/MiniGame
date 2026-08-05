@@ -4,6 +4,7 @@ import { ArrowRight, Cable, Hand, Keyboard } from "lucide-react";
 import MangoteGame from "./MangoteGame";
 import { requireSession } from "../shared/lib/session";
 import { sfx } from "../shared/lib/sfx";
+import { destinoAposVitoria } from "../shared/lib/vitoria";
 import { StoryScreen } from "../shared/components/StoryScreen";
 import { MusicHUD } from "../shared/components/MusicHUD";
 
@@ -86,7 +87,7 @@ export default function App() {
           </p>
         </motion.div>
       ) : (
-        <MangoteGame onWin={() => (window.location.href = "/roleta")} />
+        <MangoteGame onWin={() => (window.location.href = destinoAposVitoria())} />
       )}
     </div>
   );

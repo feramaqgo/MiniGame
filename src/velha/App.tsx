@@ -4,6 +4,7 @@ import { ArrowRight, Grid3x3 } from "lucide-react";
 import VelhaGame from "./VelhaGame";
 import { requireSession } from "../shared/lib/session";
 import { sfx } from "../shared/lib/sfx";
+import { destinoAposVitoria } from "../shared/lib/vitoria";
 import { StoryScreen } from "../shared/components/StoryScreen";
 import { MusicHUD } from "../shared/components/MusicHUD";
 
@@ -66,7 +67,7 @@ export default function App() {
           </button>
         </motion.div>
       ) : (
-        <VelhaGame onWin={() => (window.location.href = "/roleta")} />
+        <VelhaGame onWin={() => (window.location.href = destinoAposVitoria())} />
       )}
     </div>
   );

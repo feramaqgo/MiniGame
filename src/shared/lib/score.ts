@@ -15,6 +15,8 @@ export interface MetricasPartida {
   /** Mangote: passos dados e o mínimo necessário (mede rota, não sorte). */
   passos?: number;
   passosMinimos?: number;
+  /** Mangote: mudanças de direção — bater na tela sem pensar penaliza. */
+  toques?: number;
 }
 
 /**
@@ -31,6 +33,8 @@ export async function registrarScore(
   try {
     const session = getSession();
     if (!session?.codigo) return null;
+    // Modo equipe (/menu5398) nunca entra no placar oficial.
+    if (session.equipe) return null;
 
     const resposta = await fetch("/api/score", {
       method: "POST",

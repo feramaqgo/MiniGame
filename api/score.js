@@ -46,10 +46,14 @@ const REGRAS = {
     rapidez: { otimo: 26, pessimo: 110 },
   },
   cobrinha: {
-    // Eficiência de rota: passos mínimos necessários / passos realmente dados.
-    // 1.0 seria a rota perfeita — impossível na prática por causa das curvas.
+    // Habilidade combina rota e economia de toques (ver calcularPontos):
+    // a rota mede planejamento, os toques medem controle. Nos outros jogos
+    // cada clique já vira jogada contada; aqui precisou ser explícito.
     pesos: { tentativas: 350, habilidade: 400, rapidez: 250 },
     habilidade: { campo: "eficiencia", otimo: 0.85, pessimo: 0.25 },
+    // Toques por porção coletada: ~2 é ótimo (planejou a rota), ~9 é bater
+    // na tela sem pensar.
+    toquesPorPorcao: { otimo: 2, pessimo: 9, peso: 0.4 },
     rapidez: { otimo: 15, pessimo: 75 },
   },
   velha: {
@@ -79,20 +83,35 @@ function calcularPontos(jogo, dados) {
   const fatorTentativas = Math.max(0, 1 - (tentativas - 1) * 0.25);
 
   // Habilidade: métrica própria do jogo.
-  let valorHabilidade = dados[regra.habilidade.campo];
+  let fatorHabilidade;
   if (regra.habilidade.campo === "eficiencia") {
     // Mangote manda passos crus; a eficiência é calculada aqui.
     const passos = Number(dados.passos);
     const minimos = Number(dados.passosMinimos);
-    valorHabilidade = passos > 0 && minimos > 0 ? minimos / passos : 0;
+    const eficiencia = passos > 0 && minimos > 0 ? minimos / passos : 0;
+    const fatorRota = normalizar(
+      eficiencia,
+      regra.habilidade.otimo,
+      regra.habilidade.pessimo
+    );
+
+    // Toques por porção: quanto mais a pessoa bate na tela sem pensar, pior.
+    const t = regra.toquesPorPorcao;
+    const toques = Number(dados.toques);
+    const porcoes = 6; // ALVO do jogo
+    const fatorToques =
+      Number.isFinite(toques) && toques > 0
+        ? normalizar(toques / porcoes, t.otimo, t.pessimo)
+        : 1; // sem dado (versão antiga do cliente): não penaliza
+
+    fatorHabilidade = fatorRota * (1 - t.peso) + fatorToques * t.peso;
   } else {
-    valorHabilidade = Number(valorHabilidade);
+    fatorHabilidade = normalizar(
+      Number(dados[regra.habilidade.campo]),
+      regra.habilidade.otimo,
+      regra.habilidade.pessimo
+    );
   }
-  const fatorHabilidade = normalizar(
-    valorHabilidade,
-    regra.habilidade.otimo,
-    regra.habilidade.pessimo
-  );
 
   const segundos = Number(dados.tempoMs) / 1000;
   const fatorRapidez = normalizar(segundos, regra.rapidez.otimo, regra.rapidez.pessimo);

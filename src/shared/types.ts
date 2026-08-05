@@ -21,4 +21,8 @@ export interface ArcadeSession {
   /** Sessão criada no tablet do estande (código validado). Jogos rodam
    * normalmente; a roleta gira por código e volta pro /tablet no fim. */
   tablet?: boolean;
+  /** Sessão da equipe pela rota secreta (/menu5398): entra direto no menu
+   * sem código de visitante. Os jogos funcionam igual, mas nada é gravado —
+   * sem pontuação no placar e sem giro de roleta (não gasta brinde). */
+  equipe?: boolean;
 }
