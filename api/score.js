@@ -138,7 +138,7 @@ export default async function handler(req, res) {
     return;
   }
 
-  const { codigo, senha, jogo, tempoMs, jogadas, tentativas, margem, passos, passosMinimos } =
+  const { codigo, senha, jogo, tempoMs, jogadas, tentativas, margem, passos, passosMinimos, toques } =
     req.body || {};
 
   if (!process.env.ADMIN_PASSPHRASE || senha !== process.env.ADMIN_PASSPHRASE) {
@@ -193,6 +193,7 @@ export default async function handler(req, res) {
     margem,
     passos,
     passosMinimos,
+    toques,
   });
 
   try {
