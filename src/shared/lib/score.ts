@@ -1,5 +1,6 @@
-import { getSession } from "./session";
+import { getPartida } from "./session";
 import { getTabletSenha } from "./tablet";
+import { enfileirar, sincronizar } from "./outbox";
 
 export type Jogo = "chute" | "memoria" | "cobrinha" | "velha";
 
@@ -20,38 +21,54 @@ export interface MetricasPartida {
 }
 
 /**
- * Registra a pontuação do visitante ao vencer um jogo.
+ * Registra a partida vencida — ainda sem saber quem é a pessoa.
  *
- * Manda só as métricas cruas — quem calcula os pontos é o servidor. Falhar
- * aqui nunca pode segurar o visitante: se o placar não gravar, o jogo segue
- * normalmente pra roleta.
+ * Manda só as métricas cruas: quem calcula os pontos é o servidor, então o
+ * placar não depende de confiar na tela do tablet. Se a rede estiver fora, o
+ * envio vai pra fila e sobe sozinho depois — o visitante não pode perder a
+ * pontuação por causa do wi-fi do pavilhão.
+ *
+ * O dono dessa pontuação é definido depois, quando a pessoa escaneia o QR e
+ * se cadastra no celular (`api/resgatar.js`).
  */
-export async function registrarScore(
+export async function registrarPartida(
   jogo: Jogo,
   metricas: MetricasPartida
-): Promise<number | null> {
-  try {
-    const session = getSession();
-    if (!session?.codigo) return null;
-    // Modo equipe (/menu5398) nunca entra no placar oficial.
-    if (session.equipe) return null;
+): Promise<void> {
+  const partida = getPartida();
+  if (!partida) return;
+  // Modo equipe (/menu5398) nunca entra no placar oficial.
+  if (partida.equipe) return;
 
-    const resposta = await fetch("/api/score", {
+  const corpo = {
+    partidaId: partida.id,
+    senha: getTabletSenha(),
+    jogo,
+    ...metricas,
+    tempoMs: Math.round(metricas.tempoMs),
+  };
+
+  try {
+    const resposta = await fetch("/api/partida", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        codigo: session.codigo,
-        senha: getTabletSenha(),
-        jogo,
-        ...metricas,
-        tempoMs: Math.round(metricas.tempoMs),
-      }),
+      body: JSON.stringify(corpo),
     });
 
-    if (!resposta.ok) return null;
-    const dados = await resposta.json();
-    return typeof dados?.pontos === "number" ? dados.pontos : null;
+    if (resposta.ok) return;
+
+    // 4xx é recusa definitiva (dados inválidos, tablet não autorizado):
+    // insistir não resolveria nada.
+    if (resposta.status >= 400 && resposta.status < 500) {
+      console.warn("Partida recusada pelo servidor:", resposta.status);
+      return;
+    }
+
+    // 5xx: problema do lado de lá — guarda e tenta de novo depois.
+    enfileirar(partida.id, "/api/partida", corpo);
   } catch {
-    return null;
+    // Sem rede: a partida não pode se perder por isso.
+    enfileirar(partida.id, "/api/partida", corpo);
+    void sincronizar();
   }
 }

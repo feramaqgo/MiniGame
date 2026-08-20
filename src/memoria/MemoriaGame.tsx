@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, Trophy, RotateCcw } from "lucide-react";
 import { sfx } from "../shared/lib/sfx";
-import { registrarScore } from "../shared/lib/score";
+import { registrarPartida } from "../shared/lib/score";
 
 interface MemoriaGameProps {
   onWin: () => void;
@@ -95,7 +95,7 @@ export default function MemoriaGame({ onWin }: MemoriaGameProps) {
   useEffect(() => {
     if (venceu) {
       sfx.vitoria();
-      registrarScore("memoria", {
+      registrarPartida("memoria", {
         tempoMs: performance.now() - inicioRef.current,
         tentativas: tentativasRef.current,
         jogadas: movimentos,

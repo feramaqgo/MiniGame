@@ -6,14 +6,16 @@
 import { useState, useEffect, useRef } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 import { Etapa } from "./types";
-import { requireSession } from "./shared/lib/session";
-import { registrarScore } from "./shared/lib/score";
+import { requirePartida } from "./shared/lib/session";
+import { registrarPartida } from "./shared/lib/score";
 import { destinoAposVitoria } from "./shared/lib/vitoria";
+import { prepararCachePremios } from "./shared/lib/premios";
 import HeroScreen from "./components/HeroScreen";
 import InstrucaoScreen from "./components/InstrucaoScreen";
 import Game from "./components/Game";
 import ErroScreen from "./components/ErroScreen";
 import { StoryScreen } from "./shared/components/StoryScreen";
+import SaidaDiscreta from "./shared/components/SaidaDiscreta";
 
 export default function App() {
   const [etapa, setEtapa] = useState<Etapa>("story");
@@ -28,9 +30,13 @@ export default function App() {
   const [musicStarted, setMusicStarted] = useState(false);
 
   useEffect(() => {
-    // Exige login feito no hub (/) antes de jogar — manda de volta se faltar.
-    if (requireSession()) {
+    // Exige uma partida aberta pelo menu do tablet — sem isso a vitória não
+    // teria onde ser registrada.
+    if (requirePartida()) {
       setSessionChecked(true);
+      // Guarda a lista de brindes enquanto ainda há rede: o giro acontece
+      // depois, no celular, e pode pegar o aparelho offline.
+      void prepararCachePremios();
     }
   }, []);
 
@@ -105,7 +111,7 @@ export default function App() {
                 onGoal={async (margem) => {
                   // Grava o placar antes de sair da página; se falhar, segue
                   // pra roleta do mesmo jeito.
-                  await registrarScore("chute", {
+                  await registrarPartida("chute", {
                     tempoMs: performance.now() - inicioRef.current,
                     tentativas: tentativasRef.current,
                     margem,
@@ -155,6 +161,11 @@ export default function App() {
       <main className="flex-1 flex flex-col relative z-10" id="campaign-viewport">
         {renderScreen()}
       </main>
+
+      {/* Porta de saída: quem não está acertando o gol volta e escolhe outro */}
+      <div className="relative z-10 text-center pb-4">
+        <SaidaDiscreta href="/tablet">Trocar de jogo</SaidaDiscreta>
+      </div>
     </div>
   );
 }

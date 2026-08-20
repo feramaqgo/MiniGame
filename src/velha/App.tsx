@@ -2,18 +2,23 @@ import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { ArrowRight, Grid3x3 } from "lucide-react";
 import VelhaGame from "./VelhaGame";
-import { requireSession } from "../shared/lib/session";
+import { requirePartida } from "../shared/lib/session";
 import { sfx } from "../shared/lib/sfx";
+import { prepararCachePremios } from "../shared/lib/premios";
 import { destinoAposVitoria } from "../shared/lib/vitoria";
 import { StoryScreen } from "../shared/components/StoryScreen";
 import { MusicHUD } from "../shared/components/MusicHUD";
+import SaidaDiscreta from "../shared/components/SaidaDiscreta";
 
 export default function App() {
   const [sessionChecked, setSessionChecked] = useState(false);
   const [etapa, setEtapa] = useState<"story" | "intro" | "jogando">("story");
 
   useEffect(() => {
-    if (requireSession()) setSessionChecked(true);
+    if (requirePartida()) setSessionChecked(true);
+    // Guarda a lista de brindes enquanto ainda há rede: o giro
+    // acontece depois, no celular, e pode pegar o aparelho offline.
+    void prepararCachePremios();
   }, []);
 
   if (!sessionChecked) return null;
@@ -69,6 +74,10 @@ export default function App() {
       ) : (
         <VelhaGame onWin={() => (window.location.href = destinoAposVitoria())} />
       )}
+
+      <SaidaDiscreta href="/tablet" className="mt-2">
+        Trocar de jogo
+      </SaidaDiscreta>
     </div>
   );
 }

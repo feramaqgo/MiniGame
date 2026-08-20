@@ -1,7 +1,7 @@
 import { useEffect, useCallback, useRef, useState } from "react";
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Hand, RotateCcw, Trophy } from "lucide-react";
 import { sfx } from "../shared/lib/sfx";
-import { registrarScore } from "../shared/lib/score";
+import { registrarPartida } from "../shared/lib/score";
 
 const GRID = 13; // células por lado (menos células = mais fáceis de mirar)
 const SIZE = 390; // tamanho lógico do canvas (px)
@@ -222,7 +222,7 @@ export default function MangoteGame({ onWin }: MangoteGameProps) {
       if (novoScore >= ALVO) {
         sfx.vitoria();
         setEstado("venceu");
-        registrarScore("cobrinha", {
+        registrarPartida("cobrinha", {
           tempoMs: performance.now() - inicioRef.current,
           tentativas: tentativasRef.current,
           passos: passosRef.current,

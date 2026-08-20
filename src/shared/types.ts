@@ -5,24 +5,34 @@ export interface GoogleProfile {
   picture: string | null;
 }
 
-/** Sessão do arcade, persistida em localStorage — vale pra qualquer jogo. */
-export interface ArcadeSession {
-  idToken: string;
+/**
+ * Partida em andamento no tablet.
+ *
+ * No fluxo "joga primeiro, cadastra depois" o tablet não sabe quem está
+ * jogando — e não precisa saber. Ele carrega só o `id` da partida, que vira
+ * a chave de idempotência do envio e viaja no QR code pro celular do
+ * visitante fazer o cadastro.
+ */
+export interface PartidaAtiva {
+  id: string;
+  /** Rota secreta da equipe (/menu5398): joga igual, mas nada é gravado. */
+  equipe?: boolean;
+}
+
+/**
+ * Dados capturados no cadastro pós-jogo, no celular do visitante.
+ *
+ * `empresa` e `cargo` são sempre digitados: o Google não fornece nenhum dos
+ * dois, e numa feira de construção pesada são eles que separam curioso de
+ * comprador.
+ */
+export interface LeadData {
+  nome: string;
+  empresa: string;
+  cargo: string;
   celular: string;
-  name: string | null;
   email: string | null;
   picture: string | null;
-  /** Código único de participação (sequencial, gerado no cadastro). No
-   * celular é o número que a pessoa digita no tablet; no tablet é o código
-   * validado que autoriza o giro da roleta. */
-  codigo?: number | null;
-  /** A pessoa já girou a roleta (código de uso único já consumido). */
-  jaGirou?: boolean;
-  /** Sessão criada no tablet do estande (código validado). Jogos rodam
-   * normalmente; a roleta gira por código e volta pro /tablet no fim. */
-  tablet?: boolean;
-  /** Sessão da equipe pela rota secreta (/menu5398): entra direto no menu
-   * sem código de visitante. Os jogos funcionam igual, mas nada é gravado —
-   * sem pontuação no placar e sem giro de roleta (não gasta brinde). */
-  equipe?: boolean;
+  /** Presente quando veio do login Google; o servidor reconfere. */
+  idToken: string | null;
 }

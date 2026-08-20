@@ -3,7 +3,6 @@ import { sfx } from "../../shared/lib/sfx";
 import Placar from "./Placar";
 
 interface RecepcaoScreenProps {
-  nome: string | null;
   onCancelar: () => void;
   /** Aberto pela rota secreta da equipe: nada é gravado. */
   modoEquipe?: boolean;
@@ -40,10 +39,14 @@ const jogos = [
   },
 ];
 
-/** Recepção do Rino: cumprimenta o visitante pelo nome e abre o menu. */
-export default function RecepcaoScreen({ nome, onCancelar, modoEquipe }: RecepcaoScreenProps) {
-  const primeiroNome = nome?.split(" ")[0] || "visitante";
-
+/**
+ * Recepção do Rino: apresenta o desafio e abre o menu.
+ *
+ * O cumprimento é genérico de propósito — neste ponto do fluxo ninguém se
+ * identificou ainda, e é isso que faz a pessoa começar a jogar em segundos.
+ * O nome só aparece no final, no celular dela, depois do cadastro.
+ */
+export default function RecepcaoScreen({ onCancelar, modoEquipe }: RecepcaoScreenProps) {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center py-10 px-6 relative overflow-hidden">
       <div className="max-w-6xl w-full space-y-8 relative z-10">
@@ -56,7 +59,7 @@ export default function RecepcaoScreen({ nome, onCancelar, modoEquipe }: Recepca
           />
           <div className="relative card-arcade rounded-2xl rounded-bl-sm px-5 py-4 md:px-7 md:py-5 max-w-md">
             <p className="font-display text-xl md:text-2xl uppercase tracking-tight font-bold text-[#1A1208]">
-              Olá, <span className="text-[#FF6801]">{primeiroNome}</span>! Eu sou o Rino! 🦏
+              Olá! Eu sou o <span className="text-[#FF6801]">Rino</span>! 🦏
             </p>
             <p className="font-sans text-sm md:text-base text-[#6B6048] mt-1">
               {modoEquipe ? (
