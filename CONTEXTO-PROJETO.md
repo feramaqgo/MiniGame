@@ -168,9 +168,9 @@ um componente do jogo que recebe `onWin` (= redireciona pra `/roleta`). Cada um 
 ### Variáveis de ambiente (Vercel, produção)
 
 - `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` — já configuradas.
-- `ADMIN_PASSPHRASE` — já configurada (senha atual: `concreteshow2026`). É a
-  mesma senha que desbloqueia o tablet (`/tablet`) e autoriza os endpoints
-  `validar-codigo` e `girar`.
+- `ADMIN_PASSPHRASE` — já configurada (valor no painel da Vercel, não repetido
+  aqui de propósito). É a mesma senha que desbloqueia o tablet (`/tablet`) e
+  autoriza os endpoints `validar-codigo` e `girar`.
 - `GOOGLE_CLIENT_ID` — **configurada** (2026-08-04, projeto Google Cloud
   "Roleta ConcreteShow"). O mesmo valor está hardcoded (é público) em
   `src/shared/lib/googleIdentity.ts`.
