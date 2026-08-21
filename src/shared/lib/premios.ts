@@ -113,3 +113,48 @@ export function sortearLocalmente(): Premio | null {
   debitar(ultimo.id);
   return ultimo;
 }
+
+/**
+ * Deixa o tablet pronto pra funcionar sem rede.
+ *
+ * Pré-cachear só o HTML não basta: cada página referencia arquivos JS/CSS
+ * com hash no nome, e sem eles a tela abre em branco. Aqui buscamos a página
+ * E os arquivos que ela referencia — o service worker intercepta cada
+ * requisição e guarda. Depois disso o aparelho abre qualquer jogo offline.
+ *
+ * Roda enquanto o tablet está ocioso na tela inicial, que é justamente
+ * quando sobra rede e ninguém está esperando.
+ */
+export async function aquecerCacheDasTelas(): Promise<void> {
+  if (typeof navigator === "undefined" || navigator.onLine === false) return;
+  if (!("serviceWorker" in navigator)) return;
+
+  // Rotas limpas (produção, via rewrite) e os .html correspondentes: em
+  // ambiente sem rewrite é o .html que responde, e o cache precisa dos dois
+  // pra o aparelho abrir offline de qualquer jeito.
+  const rotas = [
+    "/tablet", "/tablet.html",
+    "/chute", "/chute.html",
+    "/cobrinha", "/cobrinha.html",
+    "/memoria", "/memoria.html",
+    "/velha", "/velha.html",
+    "/roleta", "/roleta.html",
+    "/", "/index.html",
+  ];
+
+  for (const rota of rotas) {
+    try {
+      const r = await fetch(rota, { cache: "no-cache" });
+      if (!r.ok) continue;
+      const html = await r.text();
+
+      // Os assets têm hash no nome (mudam a cada build), então são
+      // descobertos aqui em vez de listados no service worker.
+      const assets = [...html.matchAll(/(?:src|href)="(\/assets\/[^"]+)"/g)].map((m) => m[1]);
+      await Promise.all(assets.map((a) => fetch(a).catch(() => undefined)));
+    } catch {
+      // Rede caiu no meio do aquecimento: o que já entrou continua valendo.
+      return;
+    }
+  }
+}

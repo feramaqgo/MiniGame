@@ -63,7 +63,11 @@ export default function App() {
     setResgatando(true);
     setErrorMessage(null);
 
-    const resultado = await girarRoleta(session.codigo, getTabletSenha());
+    const resultado = await girarRoleta(
+      session.codigo,
+      getTabletSenha(),
+      !!session.validadoOffline
+    );
     setResgatando(false);
 
     if (!resultado.ok) {

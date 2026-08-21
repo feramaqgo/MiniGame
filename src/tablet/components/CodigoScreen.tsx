@@ -5,7 +5,8 @@ import { sfx } from "../../shared/lib/sfx";
 
 interface CodigoScreenProps {
   onVoltar: () => void;
-  onCodigoValido: (codigo: number, nome: string | null) => void;
+  /** `offline` = validado sem rede; o servidor confere quando a fila subir. */
+  onCodigoValido: (codigo: number, nome: string | null, offline?: boolean) => void;
   onTabletNaoAutorizado: () => void;
 }
 
@@ -89,8 +90,21 @@ export default function CodigoScreen({
       sfx.vitoria();
       onCodigoValido(data.codigo, data.nome);
     } catch {
-      sfx.erro();
-      setErro("Sem conexão. Tente de novo.");
+      // Sem rede: DEIXA ENTRAR.
+      //
+      // Bloquear aqui seria o pior desfecho possível — a pessoa se cadastrou
+      // (com os dados dela no celular, que tem 4G próprio), atravessou o
+      // estande, digitou o código certo, e levaria um "sem conexão" por
+      // causa do wi-fi do pavilhão. Ela iria embora achando que não
+      // funciona, e o lead que já foi capturado morreria sem virar visita.
+      //
+      // O risco de aceitar é pequeno e conhecido: alguém pode digitar um
+      // código inventado enquanto a rede está fora. O giro que vier depois
+      // sobe pela fila e o servidor confere de verdade — se o código não
+      // existir, fica registrado pra equipe. Um brinde a menos é barato
+      // perto de travar a fila inteira do estande.
+      sfx.vitoria();
+      onCodigoValido(codigo, null, true);
     } finally {
       setValidando(false);
     }

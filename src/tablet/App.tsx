@@ -6,6 +6,7 @@ import RecepcaoScreen from "./components/RecepcaoScreen";
 import CampeaoScreen from "./components/CampeaoScreen";
 import { getTabletSenha, clearTabletSenha } from "../shared/lib/tablet";
 import { clearSession, saveSession } from "../shared/lib/session";
+import { prepararCachePremios, aquecerCacheDasTelas } from "../shared/lib/premios";
 import { ROTA_EQUIPE } from "../shared/lib/vitoria";
 import { ArcadeSession } from "../shared/types";
 
@@ -54,7 +55,16 @@ export default function App() {
     }
   }, [etapa]);
 
-  const handleCodigoValido = (codigo: number, nome: string | null) => {
+  // Enquanto o tablet está parado na tela do QR — ninguém esperando, rede
+  // disponível — ele se prepara pra sobreviver à queda do wi-fi: guarda a
+  // lista de brindes e baixa as telas dos jogos pro cache do navegador.
+  useEffect(() => {
+    if (etapa !== "qr") return;
+    void prepararCachePremios();
+    void aquecerCacheDasTelas();
+  }, [etapa]);
+
+  const handleCodigoValido = (codigo: number, nome: string | null, offline?: boolean) => {
     const session: ArcadeSession = {
       idToken: "tablet",
       celular: "tablet",
@@ -63,6 +73,8 @@ export default function App() {
       picture: null,
       codigo,
       tablet: true,
+      // Entrou sem rede: o giro vai pela fila e o servidor confere depois.
+      validadoOffline: offline || undefined,
     };
     saveSession(session);
     setVisitante({ codigo, nome });

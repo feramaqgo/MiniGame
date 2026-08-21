@@ -17,14 +17,37 @@ const CACHE_ESTATICO = `feramaq-estatico-${VERSAO}`;
 const CACHE_PAGINAS = `feramaq-paginas-${VERSAO}`;
 
 // Casca mínima pra abrir offline.
-const PRE_CACHE = ["/", "/tablet", "/icon-192.png", "/manifest.webmanifest"];
+// Todas as telas do ciclo, não só a inicial: quem está offline precisa
+// conseguir abrir o jogo, não apenas a home.
+const PRE_CACHE = [
+  "/",
+  "/tablet",
+  "/chute",
+  "/cobrinha",
+  "/memoria",
+  "/velha",
+  "/roleta",
+  "/icon-192.png",
+  "/manifest.webmanifest",
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches
       .open(CACHE_PAGINAS)
-      .then((cache) => cache.addAll(PRE_CACHE))
-      // Falhar o pre-cache não pode impedir a instalação do SW.
+      .then((cache) =>
+        // Um por um, de propósito: `cache.addAll` é atômico e uma única URL
+        // que falhe (rewrite ausente em dev, rota renomeada) derruba o
+        // pre-cache inteiro em silêncio — o aparelho fica achando que está
+        // preparado pra ficar offline quando não está.
+        Promise.all(
+          PRE_CACHE.map((url) =>
+            cache.add(new Request(url, { cache: "reload" })).catch((err) => {
+              console.warn("[sw] nao cacheou", url, err);
+            })
+          )
+        )
+      )
       .catch(() => undefined)
       .then(() => self.skipWaiting())
   );
@@ -64,7 +87,11 @@ self.addEventListener("fetch", (event) => {
   // Regra 3: assets versionados e mídia — cache primeiro.
   if (url.pathname.startsWith("/assets/") || ehMidia(url)) {
     event.respondWith(
-      caches.match(request).then(
+      // `ignoreVary` é essencial aqui: os imports de módulo ES chegam com
+      // cabeçalhos diferentes dos usados quando o arquivo foi guardado, e o
+      // match estrito falharia mesmo com o arquivo em cache — o app abria
+      // em branco offline, com o JS "faltando" que na verdade estava lá.
+      caches.match(request, { ignoreVary: true }).then(
         (cacheado) =>
           cacheado ||
           fetch(request).then((resposta) => {
@@ -91,7 +118,16 @@ self.addEventListener("fetch", (event) => {
           return resposta;
         })
         .catch(() =>
-          caches.match(request).then((cacheado) => cacheado || caches.match("/tablet"))
+          caches
+            .match(request, { ignoreVary: true })
+            .then(
+              (cacheado) =>
+                cacheado ||
+                // Rota limpa e .html são a mesma tela: se uma não está
+                // guardada, a outra serve.
+                caches.match(url.pathname.replace(/\.html$/, ""), { ignoreVary: true })
+            )
+            .then((r) => r || caches.match("/tablet", { ignoreVary: true }))
         )
     );
   }

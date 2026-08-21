@@ -25,9 +25,16 @@ export interface GirarResultado {
  */
 export async function girarRoleta(
   codigo: number,
-  senha: string | null
+  senha: string | null,
+  validadoOffline = false
 ): Promise<GirarResultado> {
   const corpo = { codigo, senha, prizeId: null as string | null };
+
+  // O código já entrou sem rede: não faz sentido esperar o timeout do
+  // servidor com a pessoa olhando pra tela. Sorteia aqui e enfileira.
+  if (validadoOffline && typeof navigator !== "undefined" && navigator.onLine === false) {
+    return sortearOffline(codigo, senha);
+  }
 
   try {
     const response = await fetch("/api/girar", {
