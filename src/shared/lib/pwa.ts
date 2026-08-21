@@ -65,6 +65,13 @@ export function registrarServiceWorker() {
   window.addEventListener("load", () => {
     navigator.serviceWorker
       .register("/sw.js")
+      .then((reg) => {
+        // Procura versão nova a cada abertura e de hora em hora. Sem isso, um
+        // tablet que fica dias ligado no estande pode seguir com uma versão
+        // antiga do cache por muito tempo.
+        void reg.update();
+        window.setInterval(() => void reg.update(), 60 * 60 * 1000);
+      })
       .catch((err) => console.warn("Service worker não registrado:", err));
   });
 }

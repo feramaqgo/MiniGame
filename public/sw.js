@@ -12,7 +12,12 @@
 // 3. Assets com hash no nome (/assets/*) e mídia (imagens/áudio/vídeo): cache
 //    primeiro — são imutáveis e pesados, não vale rebaixar por rede.
 
-const VERSAO = "v1";
+// IMPORTANTE: subir esta versão a cada mudança no que é guardado em cache.
+// O `activate` só apaga caches de versões DIFERENTES desta — então, sem
+// subir aqui, um aparelho que já tenha um cache quebrado da versão anterior
+// continua usando o cache quebrado, mesmo com o service worker novo. Foi
+// exatamente o que aconteceu quando o pre-cache atômico falhava em silêncio.
+const VERSAO = "v2";
 const CACHE_ESTATICO = `feramaq-estatico-${VERSAO}`;
 const CACHE_PAGINAS = `feramaq-paginas-${VERSAO}`;
 
