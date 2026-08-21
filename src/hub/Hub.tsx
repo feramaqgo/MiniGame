@@ -31,6 +31,12 @@ export default function Hub() {
   const [googleData, setGoogleData] = useState<GoogleStep | null>(null);
   /** Cadastro manual assumiu (Google não abriu, ou a pessoa pediu). */
   const [manual, setManual] = useState(false);
+  /** A saída manual só fica visível depois de um tempo parado na tela.
+   * Quem tem problema de verdade fica ali esperando e encontra; quem só
+   * quer pular o login já teria clicado no Google e seguido. Isso evita
+   * que a porta de emergência vire o caminho principal — o cadastro manual
+   * não tem identidade verificada. */
+  const [mostrarSaidaManual, setMostrarSaidaManual] = useState(false);
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [empresa, setEmpresa] = useState("");
@@ -52,6 +58,13 @@ export default function Hub() {
     if (typeof navigator !== "undefined" && navigator.onLine === false) setManual(true);
   }, []);
 
+  // A porta de emergência aparece só pra quem ficou travado de verdade.
+  useEffect(() => {
+    if (etapa !== "login" || identificado) return;
+    const t = window.setTimeout(() => setMostrarSaidaManual(true), 12000);
+    return () => window.clearTimeout(t);
+  }, [etapa, identificado]);
+
   useEffect(() => {
     if (etapa !== "login" || session || identificado || !googleButtonRef.current) return;
 
@@ -71,7 +84,10 @@ export default function Hub() {
       .then(() => window.clearTimeout(timer))
       .catch((err) => {
         console.error("Erro ao carregar login do Google:", err);
-        if (vivo) setManual(true);
+        if (vivo) {
+          setMostrarSaidaManual(true);
+          setManual(true);
+        }
       });
 
     return () => {
@@ -231,11 +247,18 @@ export default function Hub() {
             <div className="flex justify-center py-2">
               <div ref={googleButtonRef} />
             </div>
-            {/* Porta de saída: o Google trava mais do que parece em wi-fi de
-                feira, e ninguém pode ficar preso na entrada por causa disso. */}
-            <SaidaDiscreta onClick={() => setManual(true)}>
-              Não consegui entrar com o Google
-            </SaidaDiscreta>
+            {/* Porta de emergência, não atalho: só aparece pra quem ficou
+                parado 12s ou pra quem o Google realmente falhou. Deixá-la
+                sempre visível transformaria o cadastro sem verificação no
+                caminho fácil. */}
+            {mostrarSaidaManual && (
+              <SaidaDiscreta
+                onClick={() => setManual(true)}
+                className="opacity-60 hover:opacity-100 text-[10px]"
+              >
+                Problemas para entrar?
+              </SaidaDiscreta>
+            )}
           </>
         ) : (
           <form onSubmit={handleContinuar} className="space-y-3.5 text-left">

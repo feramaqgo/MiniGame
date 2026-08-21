@@ -1,11 +1,13 @@
 import { motion } from "motion/react";
-import { ArrowRight, PartyPopper, WifiOff } from "lucide-react";
+import { ArrowRight, Camera, PartyPopper, WifiOff } from "lucide-react";
 import Confetti from "./Confetti";
 import VideoBackdrop from "./VideoBackdrop";
 import { Prize } from "../types";
 
 interface ResultadoScreenProps {
   prize: Prize | null;
+  /** Código do participante — identifica a pessoa na hora de retirar. */
+  codigo?: number | null;
   /** Libera a tela pro próximo visitante — ação da equipe do estande. */
   onProximo?: () => void;
   /** Sorteado no tablet, sem rede: sobe pela fila quando a conexão voltar. */
@@ -20,7 +22,7 @@ interface ResultadoScreenProps {
  * toque acidental (ou um timer estourando) faria ele perder a prova. Quem
  * libera é a equipe, no botão discreto do canto.
  */
-export default function ResultadoScreen({ prize, onProximo, offline }: ResultadoScreenProps) {
+export default function ResultadoScreen({ prize, codigo, onProximo, offline }: ResultadoScreenProps) {
   return (
     <div className="w-full min-h-screen flex flex-col justify-center items-center py-12 px-4 relative overflow-hidden">
       <VideoBackdrop src="/roleta-resultado-fundo.mp4" />
@@ -63,9 +65,26 @@ export default function ResultadoScreen({ prize, onProximo, offline }: Resultado
           </motion.p>
         </div>
 
+        {/* O código identifica a pessoa na retirada — junto com o nome do
+            brinde, é o que a foto precisa conter. */}
+        {codigo != null && (
+          <div className="bg-[#1A1208] rounded-xl py-2.5 px-4">
+            <p className="font-sans text-[10px] uppercase tracking-widest text-[#F5C518]/70">
+              Código
+            </p>
+            <p className="font-display text-3xl font-bold text-[#F5C518] tabular-nums leading-none">
+              {codigo}
+            </p>
+          </div>
+        )}
+
         <div className="bg-[#FF6801]/10 border border-[#FF6801]/30 rounded-xl p-4">
-          <p className="text-sm text-[#4A4030] font-sans leading-relaxed">
-            Mostre esta tela ao atendente do estande Feramaq e retire seu brinde agora mesmo.
+          <p className="text-sm text-[#4A4030] font-sans leading-relaxed flex items-center justify-center gap-2">
+            <Camera className="w-5 h-5 text-[#FF6801] shrink-0" />
+            <span>
+              <span className="font-bold">Tire uma foto desta tela</span> — seu brinde também
+              aparece no seu celular.
+            </span>
           </p>
         </div>
 
