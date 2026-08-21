@@ -33,18 +33,35 @@ export default async function handler(req, res) {
     return;
   }
 
-  const { idToken, celular, tracking } = req.body || {};
+  const { idToken, celular, nome, empresa, cargo, email, tracking } = req.body || {};
 
   const celularDigitos = (celular || "").replace(/\D/g, "");
 
-  if (!idToken || (celularDigitos.length !== 10 && celularDigitos.length !== 11)) {
+  // Empresa e cargo são obrigatórios nos dois caminhos: o Google não fornece
+  // nenhum dos dois, e são eles que qualificam o lead numa feira do setor.
+  if (
+    (celularDigitos.length !== 10 && celularDigitos.length !== 11) ||
+    !empresa?.trim() ||
+    !cargo?.trim()
+  ) {
     res.status(400).json({ ok: false, message: "Dados inválidos" });
     return;
   }
 
-  const google = await verificarTokenGoogle(idToken);
-  if (!google) {
+  // O login do Google é o caminho preferido — traz nome e e-mail conferidos.
+  // Mas ele trava mais do que parece em wi-fi de feira, então existe também o
+  // cadastro manual. `google_verified` registra a diferença de confiabilidade
+  // em vez de recusar o lead.
+  const google = idToken ? await verificarTokenGoogle(idToken) : null;
+
+  if (idToken && !google) {
     res.status(401).json({ ok: false, message: "Login com Google inválido. Tente novamente." });
+    return;
+  }
+
+  const nomeFinal = google?.name || nome?.trim();
+  if (!nomeFinal) {
+    res.status(400).json({ ok: false, message: "Informe seu nome" });
     return;
   }
 
@@ -58,11 +75,14 @@ export default async function handler(req, res) {
         Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
       },
       body: JSON.stringify({
-        p_google_sub: google.sub,
-        p_google_email: google.email,
-        p_google_name: google.name,
-        p_google_picture: google.picture,
+        p_google_sub: google?.sub || null,
+        p_google_email: google?.email || email?.trim() || null,
+        p_google_name: nomeFinal,
+        p_google_picture: google?.picture || null,
         p_celular: celular,
+        p_empresa: empresa.trim(),
+        p_cargo: cargo.trim(),
+        p_google_verified: !!google,
       }),
     });
   } catch (err) {
@@ -105,11 +125,13 @@ export default async function handler(req, res) {
   // já foi espelhado na primeira vez).
   if (novo) {
     try {
+      const emailFinal = google?.email || email?.trim() || null;
       const leadPayload = {
         webhook_id: participantId,
-        name: google.name,
-        email: google.email,
+        name: nomeFinal,
+        email: emailFinal,
         phone: celular,
+        company: empresa.trim(),
         // Marca de origem do arcade. É o campo que o CRM NÃO sobrescreve —
         // `lead_tag` é reescrito pelo trigger assign_lead_round_robin, que
         // força LEAD-MKT/LEAD-REPETIDO, então não adianta marcar por lá.
@@ -124,10 +146,13 @@ export default async function handler(req, res) {
           tag: "MiniGame",
           codigo_participacao: codigo,
           dados_do_lead: {
-            nome: google.name,
-            email: google.email,
+            nome: nomeFinal,
+            empresa: empresa.trim(),
+            cargo: cargo.trim(),
+            email: emailFinal,
             celular,
-            google_sub: google.sub,
+            google_sub: google?.sub || null,
+            identidade_verificada: !!google,
           },
           utm: {
             utm_source: tracking?.utm_source ?? null,

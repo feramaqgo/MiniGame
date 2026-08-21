@@ -3,6 +3,16 @@
 // marca o código como usado) e devolve o prêmio. O prêmio fica gravado na
 // linha do participante em roleta_participants (código, nome, e-mail,
 // celular e prêmio juntos).
+//
+// Dois caminhos chegam aqui:
+//   * online  — `prizeId` nulo, o servidor sorteia;
+//   * offline — o wi-fi do pavilhão caiu, o tablet sorteou no navegador pra
+//     a pessoa ver o brinde na hora, e isto é a fila sincronizando depois.
+//     `prizeId` vem preenchido e aqui só registramos a baixa.
+//
+// O código do participante é a chave de idempotência: a fila reenvia até
+// obter resposta, então o mesmo giro pode chegar duas vezes — e a RPC devolve
+// o mesmo prêmio em vez de sortear de novo.
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -10,7 +20,7 @@ export default async function handler(req, res) {
     return;
   }
 
-  const { codigo, senha } = req.body || {};
+  const { codigo, senha, prizeId } = req.body || {};
 
   if (!process.env.ADMIN_PASSPHRASE || senha !== process.env.ADMIN_PASSPHRASE) {
     res.status(401).json({ ok: false, message: "Tablet não autorizado" });
@@ -32,7 +42,7 @@ export default async function handler(req, res) {
         apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
         Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
       },
-      body: JSON.stringify({ p_codigo: codigoNum }),
+      body: JSON.stringify({ p_codigo: codigoNum, p_prize_id: prizeId || null }),
     });
   } catch (err) {
     console.error("Erro de conexão ao girar a roleta:", err);
@@ -71,6 +81,9 @@ export default async function handler(req, res) {
       return;
     }
 
+    // Inclui PREMIO_INVALIDO (brinde sorteado offline que sumiu do catálogo).
+    // 5xx de propósito: a fila do tablet mantém o item e continua tentando,
+    // em vez de descartar um giro que já rendeu brinde entregue em mãos.
     console.error("Erro ao girar a roleta:", rpcResponse.status, errorBody);
     res.status(502).json({ ok: false, reason: "erro", message: "Erro ao girar a roleta" });
     return;
@@ -85,7 +98,7 @@ export default async function handler(req, res) {
     return;
   }
 
-  const { prize_id: prizeId, prize_name: prizeName } = resultado;
+  const { prize_id: prizeIdFinal, prize_name: prizeName } = resultado;
 
-  res.status(200).json({ ok: true, prize: { id: prizeId, name: prizeName } });
+  res.status(200).json({ ok: true, prize: { id: prizeIdFinal, name: prizeName } });
 }

@@ -180,7 +180,7 @@ export default function VelhaGame({ onWin }: VelhaGameProps) {
       </div>
 
       {/* Tabuleiro — laje de concreto com moldura de canteiro */}
-      <div className="relative w-full max-w-[400px] aspect-square rounded-2xl p-1.5 shadow-xl faixa-perigo">
+      <div className="relative w-full max-w-[min(88vw,56vh,400px)] aspect-square rounded-2xl p-1 md:p-1.5 shadow-xl faixa-perigo">
         <div className="relative w-full h-full rounded-xl overflow-hidden border-2 border-[#1B1712] bg-[#241F1A] p-2.5">
           <div className="grid grid-cols-3 gap-2.5 w-full h-full">
             {board.map((marca, i) => {

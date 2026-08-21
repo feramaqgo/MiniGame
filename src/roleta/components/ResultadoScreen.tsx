@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { ArrowRight, PartyPopper } from "lucide-react";
+import { ArrowRight, PartyPopper, WifiOff } from "lucide-react";
 import Confetti from "./Confetti";
 import VideoBackdrop from "./VideoBackdrop";
 import { Prize } from "../types";
@@ -8,6 +8,8 @@ interface ResultadoScreenProps {
   prize: Prize | null;
   /** Libera a tela pro próximo visitante — ação da equipe do estande. */
   onProximo?: () => void;
+  /** Sorteado no tablet, sem rede: sobe pela fila quando a conexão voltar. */
+  offline?: boolean;
 }
 
 /**
@@ -18,7 +20,7 @@ interface ResultadoScreenProps {
  * toque acidental (ou um timer estourando) faria ele perder a prova. Quem
  * libera é a equipe, no botão discreto do canto.
  */
-export default function ResultadoScreen({ prize, onProximo }: ResultadoScreenProps) {
+export default function ResultadoScreen({ prize, onProximo, offline }: ResultadoScreenProps) {
   return (
     <div className="w-full min-h-screen flex flex-col justify-center items-center py-12 px-4 relative overflow-hidden">
       <VideoBackdrop src="/roleta-resultado-fundo.mp4" />
@@ -66,6 +68,14 @@ export default function ResultadoScreen({ prize, onProximo }: ResultadoScreenPro
             Mostre esta tela ao atendente do estande Feramaq e retire seu brinde agora mesmo.
           </p>
         </div>
+
+        {/* O brinde vale igual: o registro sobe sozinho quando a rede voltar */}
+        {offline && (
+          <p className="flex items-center justify-center gap-1.5 text-[11px] uppercase tracking-widest text-amber-600 font-sans">
+            <WifiOff className="w-3 h-3" />
+            Salvo no aparelho — envia sozinho quando a rede voltar
+          </p>
+        )}
       </motion.div>
     </div>
   );

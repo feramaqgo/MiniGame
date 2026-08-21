@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Building2, IdCard } from "lucide-react";
 import { formatarWhatsApp, validarWhatsApp } from "../shared/lib/validation";
+import SaidaDiscreta from "../shared/components/SaidaDiscreta";
 import { renderGoogleButton, decodeGooglePayload } from "../shared/lib/googleIdentity";
 import { clearSession, getSession, saveSession } from "../shared/lib/session";
 import { ArcadeSession } from "../shared/types";
@@ -28,18 +29,56 @@ export default function Hub() {
   });
   const [etapa, setEtapa] = useState<"story" | "login">("story");
   const [googleData, setGoogleData] = useState<GoogleStep | null>(null);
+  /** Cadastro manual assumiu (Google não abriu, ou a pessoa pediu). */
+  const [manual, setManual] = useState(false);
+  const [nome, setNome] = useState("");
+  const [email, setEmail] = useState("");
+  const [empresa, setEmpresa] = useState("");
+  const [cargo, setCargo] = useState("");
   const [celular, setCelular] = useState("");
   const [celularError, setCelularError] = useState<string | null>(null);
   const [cadastrando, setCadastrando] = useState(false);
   const googleButtonRef = useRef<HTMLDivElement | null>(null);
 
+  const identificado = !!googleData || manual;
+
+  const campoClasse =
+    "w-full bg-white border-2 border-black/10 focus:border-[#FF6801] text-[#1A1208] " +
+    "px-4 py-3 rounded-lg outline-none font-sans text-base transition-colors " +
+    "focus:ring-1 focus:ring-[#FF6801]";
+
+  // Sem rede, o Google não vai abrir — vai direto pro manual.
   useEffect(() => {
-    if (etapa !== "login" || session || googleData || !googleButtonRef.current) return;
+    if (typeof navigator !== "undefined" && navigator.onLine === false) setManual(true);
+  }, []);
+
+  useEffect(() => {
+    if (etapa !== "login" || session || identificado || !googleButtonRef.current) return;
+
+    let vivo = true;
+    // Rede lenta de pavilhão: se o botão do Google não vier em 6s, o
+    // formulário manual entra sozinho em vez de deixar a pessoa esperando.
+    const timer = window.setTimeout(() => {
+      if (vivo) setManual(true);
+    }, 6000);
+
     renderGoogleButton(googleButtonRef.current, (idToken) => {
       const decoded = decodeGooglePayload(idToken);
       setGoogleData({ idToken, ...decoded });
-    }).catch((err) => console.error("Erro ao carregar login do Google:", err));
-  }, [session, googleData, etapa]);
+      if (decoded.name) setNome(decoded.name);
+      if (decoded.email) setEmail(decoded.email);
+    })
+      .then(() => window.clearTimeout(timer))
+      .catch((err) => {
+        console.error("Erro ao carregar login do Google:", err);
+        if (vivo) setManual(true);
+      });
+
+    return () => {
+      vivo = false;
+      window.clearTimeout(timer);
+    };
+  }, [session, identificado, etapa]);
 
   const handleCelularChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCelular(formatarWhatsApp(e.target.value));
@@ -48,8 +87,21 @@ export default function Hub() {
 
   const handleContinuar = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!googleData || cadastrando) return;
+    if (!identificado || cadastrando) return;
 
+    const nomeFinal = googleData?.name || nome.trim();
+    if (!nomeFinal) {
+      setCelularError("Preencha seu nome.");
+      return;
+    }
+    if (!empresa.trim()) {
+      setCelularError("Preencha a empresa.");
+      return;
+    }
+    if (!cargo.trim()) {
+      setCelularError("Preencha seu cargo.");
+      return;
+    }
     if (!celular || !validarWhatsApp(celular)) {
       setCelularError("Celular inválido. Ex: (11) 98765-4321");
       return;
@@ -65,7 +117,11 @@ export default function Hub() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          idToken: googleData.idToken,
+          idToken: googleData?.idToken ?? null,
+          nome: nomeFinal,
+          email: googleData?.email || email.trim() || null,
+          empresa: empresa.trim(),
+          cargo: cargo.trim(),
           celular,
           tracking: {
             utm_source: params.get("utm_source"),
@@ -85,11 +141,13 @@ export default function Hub() {
       }
 
       const novaSessao: ArcadeSession = {
-        idToken: googleData.idToken,
+        // No cadastro manual não há token; "manual" mantém a sessão válida
+        // (getSession exige idToken preenchido).
+        idToken: googleData?.idToken ?? "manual",
         celular,
-        name: googleData.name,
-        email: googleData.email,
-        picture: googleData.picture,
+        name: nomeFinal,
+        email: googleData?.email || email.trim() || null,
+        picture: googleData?.picture ?? null,
         codigo: data.codigo,
         jaGirou: !!data.jaGirou,
       };
@@ -108,6 +166,11 @@ export default function Hub() {
     clearSession();
     setSession(null);
     setGoogleData(null);
+    setManual(false);
+    setNome("");
+    setEmail("");
+    setEmpresa("");
+    setCargo("");
     setCelular("");
     setEtapa("login");
   };
@@ -129,7 +192,7 @@ export default function Hub() {
   // ------------------------------------------------------------------
   if (etapa === "story") {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center py-12 px-4 relative overflow-hidden">
+      <div className="tela-arcade flex flex-col items-center justify-center px-4 relative overflow-hidden">
         <MusicHUD src="/Música para o Hub (Menu).mp3" />
         <StoryScreen
           avatarSrc="/Rino para o Menu Inicial (Hub).png"
@@ -148,19 +211,19 @@ export default function Hub() {
   // Tela 2: login
   // ------------------------------------------------------------------
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center py-12 px-4 relative overflow-hidden">
+    <div className="tela-arcade flex flex-col items-center justify-center px-4 relative overflow-hidden">
       <MusicHUD src="/Música para o Hub (Menu).mp3" />
-      <div className="max-w-md w-full card-arcade rounded-3xl p-6 md:p-8 pt-8 text-center space-y-6 relative z-10 overflow-hidden">
+      <div className="max-w-md w-full card-arcade rounded-3xl p-5 md:p-8 pt-7 md:pt-8 text-center space-y-3.5 md:space-y-5 relative z-10 overflow-hidden">
         <div className="faixa-perigo absolute top-0 inset-x-0 h-2.5" />
         <div className="inline-flex items-center gap-2 bg-[#FF6801] text-white px-4 py-1.5 rounded-full font-display text-xs font-bold uppercase tracking-wider mx-auto">
           Arcade Feramaq · Concreteshow
         </div>
 
-        <h1 className="font-display text-3xl md:text-4xl uppercase leading-tight tracking-tight font-bold text-[#1A1208]">
+        <h1 className="font-display text-2xl md:text-4xl uppercase leading-tight tracking-tight font-bold text-[#1A1208]">
           Entre pra <span className="texto-fera">jogar e ganhar</span>
         </h1>
 
-        {!googleData ? (
+        {!identificado ? (
           <>
             <p className="font-sans text-sm text-[#6B6048]">
               Entre com sua conta Google, receba seu código e jogue no tablet do estande.
@@ -168,33 +231,86 @@ export default function Hub() {
             <div className="flex justify-center py-2">
               <div ref={googleButtonRef} />
             </div>
+            {/* Porta de saída: o Google trava mais do que parece em wi-fi de
+                feira, e ninguém pode ficar preso na entrada por causa disso. */}
+            <SaidaDiscreta onClick={() => setManual(true)}>
+              Não consegui entrar com o Google
+            </SaidaDiscreta>
           </>
         ) : (
-          <form onSubmit={handleContinuar} className="space-y-4 text-left">
-            <div className="flex items-center gap-3 bg-white border border-black/10 rounded-xl p-3">
-              {googleData.picture && (
-                <img src={googleData.picture} alt="" className="w-10 h-10 rounded-full" referrerPolicy="no-referrer" />
-              )}
-              <div>
-                <p className="font-sans text-sm font-bold text-[#1A1208]">{googleData.name}</p>
-                <p className="font-sans text-xs text-[#6B6048]">{googleData.email}</p>
+          <form onSubmit={handleContinuar} className="space-y-3.5 text-left">
+            {googleData ? (
+              <div className="flex items-center gap-3 bg-white border border-black/10 rounded-xl p-3">
+                {googleData.picture && (
+                  <img src={googleData.picture} alt="" className="w-10 h-10 rounded-full" referrerPolicy="no-referrer" />
+                )}
+                <div className="min-w-0">
+                  <p className="font-sans text-sm font-bold text-[#1A1208] truncate">{googleData.name}</p>
+                  <p className="font-sans text-xs text-[#6B6048] truncate">{googleData.email}</p>
+                </div>
               </div>
+            ) : (
+              // Caminho manual: nome e e-mail viriam do Google, então são pedidos.
+              <>
+                <input
+                  type="text"
+                  required
+                  value={nome}
+                  onChange={(e) => setNome(e.target.value)}
+                  placeholder="Seu nome completo"
+                  autoComplete="name"
+                  className={campoClasse}
+                />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="E-mail (opcional)"
+                  autoComplete="email"
+                  className={campoClasse}
+                />
+              </>
+            )}
+
+            {/* Empresa e cargo: o Google não fornece nenhum dos dois, e são
+                eles que transformam o lead em conversa de venda. */}
+            <div className="relative">
+              <Building2 className="w-4 h-4 text-[#8A8375] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                type="text"
+                required
+                value={empresa}
+                onChange={(e) => setEmpresa(e.target.value)}
+                placeholder="Empresa"
+                autoComplete="organization"
+                className={campoClasse + " pl-10"}
+              />
             </div>
 
-            <div className="space-y-1">
-              <label className="block font-sans text-xs font-bold text-[#4A4030] uppercase tracking-widest">
-                WhatsApp
-              </label>
+            <div className="relative">
+              <IdCard className="w-4 h-4 text-[#8A8375] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
-                type="tel"
+                type="text"
                 required
-                value={celular}
-                onChange={handleCelularChange}
-                placeholder="(00) 00000-0000"
-                className="w-full bg-white border-2 border-black/10 focus:border-[#FF6801] text-[#1A1208] px-4 py-3 rounded-lg outline-none font-sans text-sm md:text-base transition-colors focus:ring-1 focus:ring-[#FF6801]"
+                value={cargo}
+                onChange={(e) => setCargo(e.target.value)}
+                placeholder="Seu cargo"
+                autoComplete="organization-title"
+                className={campoClasse + " pl-10"}
               />
-              {celularError && <p className="text-xs text-rose-500 font-sans font-medium">{celularError}</p>}
             </div>
+
+            <input
+              type="tel"
+              required
+              value={celular}
+              onChange={handleCelularChange}
+              placeholder="WhatsApp — (00) 00000-0000"
+              autoComplete="tel"
+              className={campoClasse}
+            />
+
+            {celularError && <p className="text-sm text-rose-600 font-sans font-medium">{celularError}</p>}
 
             <button
               type="submit"

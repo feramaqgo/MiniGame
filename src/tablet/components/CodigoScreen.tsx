@@ -99,21 +99,21 @@ export default function CodigoScreen({
   const teclas = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center py-8 px-6 relative overflow-hidden">
-      <div className="max-w-md w-full space-y-6 relative z-10">
+    <div className="tela-arcade flex flex-col items-center justify-center px-4 sm:px-6 relative overflow-hidden">
+      <div className="max-w-md w-full space-y-3 md:space-y-5 relative z-10">
         <div className="text-center space-y-2">
-          <h1 className="font-display text-3xl md:text-4xl uppercase tracking-tight font-bold text-[#1A1208]">
+          <h1 className="font-display text-2xl md:text-4xl uppercase tracking-tight font-bold text-[#1A1208]">
             Insira seu <span className="texto-fera">código</span>
           </h1>
-          <p className="font-sans text-sm text-[#6B6048]">
+          <p className="font-sans text-sm text-[#6B6048] compacta-em-tela-baixa">
             O número que apareceu no seu celular depois do cadastro.
           </p>
         </div>
 
         {/* Visor */}
-        <div className="relative bg-[#1A1208] rounded-2xl py-6 px-4 text-center overflow-hidden min-h-[104px] flex items-center justify-center">
+        <div className="relative bg-[#1A1208] rounded-2xl py-3 md:py-5 px-4 text-center overflow-hidden min-h-[68px] md:min-h-[96px] flex items-center justify-center">
           <div className="faixa-perigo absolute top-0 inset-x-0 h-1.5 opacity-80" />
-          <p className="font-display text-6xl leading-none font-bold text-[#F5C518] tabular-nums tracking-widest">
+          <p className="font-display text-4xl md:text-6xl leading-none font-bold text-[#F5C518] tabular-nums tracking-widest">
             {digitos || <span className="text-[#F5C518]/30">···</span>}
           </p>
         </div>
@@ -123,12 +123,12 @@ export default function CodigoScreen({
         )}
 
         {/* Teclado */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-2 md:gap-3">
           {teclas.map((t) => (
             <button
               key={t}
               onClick={() => apertar(t)}
-              className="card-arcade rounded-2xl py-5 font-display text-3xl font-bold text-[#1A1208] cursor-pointer transition-all hover:bg-[#FF6801]/10 active:scale-95"
+              className="card-arcade rounded-2xl py-3 md:py-5 font-display text-2xl md:text-3xl font-bold text-[#1A1208] cursor-pointer transition-all hover:bg-[#FF6801]/10 active:scale-95"
             >
               {t}
             </button>
@@ -136,13 +136,13 @@ export default function CodigoScreen({
           <button
             onClick={apagar}
             aria-label="Apagar"
-            className="card-arcade rounded-2xl py-5 flex items-center justify-center text-[#6B6048] cursor-pointer transition-all hover:bg-rose-500/10 active:scale-95"
+            className="card-arcade rounded-2xl py-3 md:py-5 flex items-center justify-center text-[#6B6048] cursor-pointer transition-all hover:bg-rose-500/10 active:scale-95"
           >
-            <Delete className="w-8 h-8" />
+            <Delete className="w-6 h-6 md:w-8 md:h-8" />
           </button>
           <button
             onClick={() => apertar("0")}
-            className="card-arcade rounded-2xl py-5 font-display text-3xl font-bold text-[#1A1208] cursor-pointer transition-all hover:bg-[#FF6801]/10 active:scale-95"
+            className="card-arcade rounded-2xl py-3 md:py-5 font-display text-2xl md:text-3xl font-bold text-[#1A1208] cursor-pointer transition-all hover:bg-[#FF6801]/10 active:scale-95"
           >
             0
           </button>
@@ -150,9 +150,9 @@ export default function CodigoScreen({
             onClick={confirmar}
             disabled={digitos.length === 0 || validando}
             aria-label="Confirmar"
-            className="bg-[#FF6801] hover:bg-[#e05c01] disabled:opacity-40 rounded-2xl py-5 flex items-center justify-center text-white cursor-pointer transition-all active:scale-95 btn-glow"
+            className="bg-[#FF6801] hover:bg-[#e05c01] disabled:opacity-40 rounded-2xl py-3 md:py-5 flex items-center justify-center text-white cursor-pointer transition-all active:scale-95 btn-glow"
           >
-            <Check className="w-9 h-9" strokeWidth={3} />
+            <Check className="w-7 h-7 md:w-9 md:h-9" strokeWidth={3} />
           </button>
         </div>
 

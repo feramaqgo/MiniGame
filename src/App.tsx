@@ -14,6 +14,8 @@ import InstrucaoScreen from "./components/InstrucaoScreen";
 import Game from "./components/Game";
 import ErroScreen from "./components/ErroScreen";
 import { StoryScreen } from "./shared/components/StoryScreen";
+import SaidaDiscreta from "./shared/components/SaidaDiscreta";
+import { prepararCachePremios } from "./shared/lib/premios";
 
 export default function App() {
   const [etapa, setEtapa] = useState<Etapa>("story");
@@ -31,6 +33,9 @@ export default function App() {
     // Exige login feito no hub (/) antes de jogar — manda de volta se faltar.
     if (requireSession()) {
       setSessionChecked(true);
+      // Guarda a lista de brindes enquanto ainda há rede — se o wi-fi
+      // cair na hora do giro, a roleta sorteia com esse cache.
+      void prepararCachePremios();
     }
   }, []);
 
@@ -155,6 +160,11 @@ export default function App() {
       <main className="flex-1 flex flex-col relative z-10" id="campaign-viewport">
         {renderScreen()}
       </main>
+
+      {/* Porta de saída: quem não está acertando o gol troca de jogo */}
+      <div className="relative z-10 text-center pb-4">
+        <SaidaDiscreta href="/tablet">Trocar de jogo</SaidaDiscreta>
+      </div>
     </div>
   );
 }

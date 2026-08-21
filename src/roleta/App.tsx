@@ -23,6 +23,8 @@ export default function App() {
   const [prizeGanho, setPrizeGanho] = useState<Prize | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [resgatando, setResgatando] = useState(false);
+  /** Giro sorteado no tablet sem rede — a fila leva depois. */
+  const [offlineFlag, setOfflineFlag] = useState(false);
 
   // Sessão criada no tablet (código validado em /tablet). É o único caminho:
   // quem chega sem ela volta pro hub, onde o código da pessoa está esperando.
@@ -79,6 +81,7 @@ export default function App() {
     }
 
     if (resultado.prize) {
+      setOfflineFlag(!!resultado.offline);
       setPrizeGanho(resultado.prize);
       setTargetPrizeId(resultado.prize.id);
       setEtapa("girando");
@@ -135,7 +138,7 @@ export default function App() {
           </div>
         );
       case "resultado":
-        return <ResultadoScreen prize={prizeGanho} onProximo={voltarProTablet} />;
+        return <ResultadoScreen prize={prizeGanho} onProximo={voltarProTablet} offline={offlineFlag} />;
       case "ja_participou":
         return <JaParticipouScreen onProximo={voltarProTablet} />;
       case "esgotado":

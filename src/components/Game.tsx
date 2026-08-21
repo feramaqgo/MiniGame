@@ -225,7 +225,7 @@ export default function Game({ onGoal, onMiss }: GameProps) {
     <div
       ref={containerRef}
       onClick={handleKick}
-      className="relative w-full h-[420px] md:h-[500px] rounded-2xl overflow-hidden cursor-pointer select-none border border-white/40 flex flex-col justify-between shadow-2xl bg-gradient-to-b from-[#A9D18A]/30 via-[#4C8C42]/45 to-[#1F7A3D]/65 backdrop-blur-sm"
+      className="relative w-full h-[min(62vh,500px)] min-h-[300px] rounded-2xl overflow-hidden cursor-pointer select-none border border-white/40 flex flex-col justify-between shadow-2xl bg-gradient-to-b from-[#A9D18A]/30 via-[#4C8C42]/45 to-[#1F7A3D]/65 backdrop-blur-sm"
       id="game-canvas-area"
     >
       {/* Stadium backdrop lights inside the container */}

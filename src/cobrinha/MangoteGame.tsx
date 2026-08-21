@@ -424,7 +424,7 @@ export default function MangoteGame({ onWin }: MangoteGameProps) {
 
       {/* Tabuleiro — o toque é capturado pela caixa externa, então tocar
           nas margens ao redor também comanda o mangote. */}
-      <div className="relative w-full max-w-[min(560px,68vh)] aspect-square rounded-2xl p-1.5 shadow-xl faixa-perigo">
+      <div className="relative w-full max-w-[min(88vw,58vh,520px)] aspect-square rounded-2xl p-1 md:p-1.5 shadow-xl faixa-perigo">
         <div
           ref={boardRef}
           className="relative w-full h-full rounded-xl overflow-hidden border-2 border-[#1B1712]"

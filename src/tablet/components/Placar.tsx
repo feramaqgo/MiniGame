@@ -65,18 +65,18 @@ export default function Placar() {
   }, [filtro]);
 
   return (
-    <div className="card-arcade rounded-2xl p-5 relative overflow-hidden">
+    <div className="card-arcade rounded-2xl p-3 md:p-5 relative overflow-hidden w-full">
       <div className="faixa-perigo absolute top-0 inset-x-0 h-1.5" />
 
-      <div className="flex items-center gap-2 mb-3">
+      <div className="flex items-center gap-2 mb-2 md:mb-3">
         <Trophy className="w-5 h-5 text-[#F5C518]" />
-        <h2 className="font-display text-lg uppercase tracking-tight font-bold text-[#23201B]">
+        <h2 className="font-display text-base md:text-lg uppercase tracking-tight font-bold text-[#23201B]">
           Placar do estande
         </h2>
       </div>
 
       {/* Filtros: geral + um por jogo */}
-      <div className="flex flex-wrap gap-1.5 mb-3">
+      <div className="flex flex-wrap gap-1 md:gap-1.5 mb-2 md:mb-3">
         {FILTROS.map((f) => (
           <button
             key={f.rotulo}
@@ -101,7 +101,7 @@ export default function Placar() {
           Ninguém pontuou ainda. <span className="font-bold text-[#FF6801]">Seja o primeiro!</span>
         </p>
       ) : (
-        <ol className="space-y-1.5">
+        <ol className="space-y-1 md:space-y-1.5">
           {linhas.map((l) => (
             <li
               key={`${l.posicao}-${l.nome}`}
@@ -135,7 +135,7 @@ export default function Placar() {
         </ol>
       )}
 
-      <p className="mt-3 flex items-center justify-center gap-1.5 font-sans text-[10px] uppercase tracking-widest text-[#8A8375]">
+      <p className="mt-2 md:mt-3 flex items-center justify-center gap-1.5 font-sans text-[10px] uppercase tracking-widest text-[#8A8375] compacta-em-tela-baixa">
         <Medal className="w-3 h-3" />
         1º lugar do dia leva prêmio especial
       </p>

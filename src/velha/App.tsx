@@ -7,6 +7,8 @@ import { sfx } from "../shared/lib/sfx";
 import { destinoAposVitoria } from "../shared/lib/vitoria";
 import { StoryScreen } from "../shared/components/StoryScreen";
 import { MusicHUD } from "../shared/components/MusicHUD";
+import SaidaDiscreta from "../shared/components/SaidaDiscreta";
+import { prepararCachePremios } from "../shared/lib/premios";
 
 export default function App() {
   const [sessionChecked, setSessionChecked] = useState(false);
@@ -14,12 +16,15 @@ export default function App() {
 
   useEffect(() => {
     if (requireSession()) setSessionChecked(true);
+    // Guarda a lista de brindes enquanto ainda há rede — se o wi-fi
+    // cair na hora do giro, a roleta sorteia com esse cache.
+    void prepararCachePremios();
   }, []);
 
   if (!sessionChecked) return null;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center py-10 px-4 relative overflow-hidden">
+    <div className="tela-arcade flex flex-col items-center justify-center px-3 sm:px-4 relative overflow-hidden">
       <MusicHUD src="/Música para o Jogo da Velha.mp3" />
       {etapa === "story" ? (
         <StoryScreen 
@@ -69,6 +74,10 @@ export default function App() {
       ) : (
         <VelhaGame onWin={() => (window.location.href = destinoAposVitoria())} />
       )}
+
+      <SaidaDiscreta href="/tablet" className="mt-2">
+        Trocar de jogo
+      </SaidaDiscreta>
     </div>
   );
 }

@@ -109,7 +109,7 @@ export default function MemoriaGame({ onWin }: MemoriaGameProps) {
   }, [venceu, onWin]);
 
   return (
-    <div className="w-full max-w-md sm:max-w-2xl mx-auto flex flex-col items-center gap-4 select-none">
+    <div className="w-full max-w-[min(92vw,760px)] mx-auto flex flex-col items-center gap-2.5 md:gap-4 select-none">
       {/* HUD — pares em pips que acendem + contador de movimentos */}
       <div className="w-full flex items-center justify-between px-1">
         <div className="flex items-center gap-1.5">
@@ -132,7 +132,7 @@ export default function MemoriaGame({ onWin }: MemoriaGameProps) {
       {/* Tabuleiro — 3 colunas no celular (retrato), 4 no tablet (paisagem),
           pra as 12 cartas caberem na tela inteira sem rolagem. */}
       <div className="relative w-full">
-        <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 md:gap-4">
+        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 md:gap-3.5 w-full max-w-[min(92vw,62vh*1.4,700px)]">
           {cartas.map((carta, i) => {
             const faceUp = viradas.includes(i) || encontradas.has(carta.chave);
             const isMatched = encontradas.has(carta.chave);

@@ -128,3 +128,66 @@ body::after {
 .btn-laranja:active {
   transform: translateY(0) scale(0.98);
 }
+
+/* ============================================================
+   RESPONSIVIDADE DE TABLET — retrato e paisagem, qualquer tamanho
+   ============================================================
+
+   O arcade roda em tablets que variam muito: de 600x962 a 1280x800, e a
+   mesma pessoa pode virar o aparelho no meio do uso. Duas regras guiam tudo
+   aqui:
+
+   1. O QUE MANDA É A MENOR DIMENSÃO. Um elemento grande (QR, roleta,
+      tabuleiro) dimensionado só pela largura estoura quando a tela é baixa
+      e larga — que é exatamente o caso de paisagem. Por isso usamos `min()`
+      com vw E vh juntos: o elemento cabe nos dois eixos, sempre.
+
+   2. TELA BAIXA PRECISA DE MENOS RESPIRO. Padding e espaçamento generosos
+      ficam ótimos em retrato e roubam o conteúdo em paisagem. As media
+      queries de ALTURA abaixo apertam o espaçamento quando falta altura,
+      em vez de deixar a página rolar. */
+
+/* Elemento quadrado grande que precisa caber nos dois eixos.
+   O 3º valor é o teto absoluto, pra não ficar gigante em telas enormes. */
+.quadrado-responsivo {
+  width: min(78vw, 62vh, 460px);
+  height: min(78vw, 62vh, 460px);
+}
+
+/* Versão para quando divide espaço com outra coluna (layout lado a lado) */
+.quadrado-responsivo-menor {
+  width: min(42vw, 56vh, 340px);
+  height: min(42vw, 56vh, 340px);
+}
+
+/* Tela cheia que encolhe o respiro conforme a altura aperta.
+   Substitui `min-h-screen py-N` nas telas principais. */
+.tela-arcade {
+  min-height: 100vh;
+  min-height: 100svh; /* evita o salto da barra do navegador no mobile */
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
+@media (max-height: 820px) {
+  .tela-arcade { padding-top: 1.25rem; padding-bottom: 1.25rem; }
+}
+
+@media (max-height: 700px) {
+  .tela-arcade { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+  /* Em paisagem baixa cada linha de texto custa caro. */
+  .tela-arcade .compacta-em-tela-baixa { display: none; }
+}
+
+@media (max-height: 600px) {
+  .tela-arcade { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+}
+
+/* Celular em paisagem: sobra muito pouca altura. Aqui o QR e o teclado
+   ficam pequenos demais pra serem úteis de qualquer forma — o objetivo é
+   só não cortar nada e deixar rolar de leve se precisar. */
+@media (max-height: 460px) {
+  .tela-arcade { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+  .quadrado-responsivo { width: min(60vw, 70vh, 300px); height: min(60vw, 70vh, 300px); }
+  .quadrado-responsivo-menor { width: min(34vw, 68vh, 220px); height: min(34vw, 68vh, 220px); }
+}
