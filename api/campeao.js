@@ -23,15 +23,28 @@ export default async function handler(req, res) {
   };
 
   try {
-    // Melhor pontuação de cada participante, do maior pro menor.
-    const r = await fetch(`${process.env.SUPABASE_URL}/rest/v1/rpc/ranking_arcade`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ p_jogo: null, p_limite: 5 }),
-    });
-    if (!r.ok) throw new Error(await r.text());
+    const spDate = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
+    spDate.setHours(0, 0, 0, 0);
+    const startOfDay = spDate.toISOString();
 
-    const ranking = await r.json();
+    const rScores = await fetch(
+      `${process.env.SUPABASE_URL}/rest/v1/arcade_scores?created_at=gte.${startOfDay}&select=nome_exibicao,pontos,jogo&order=pontos.desc,created_at.asc`,
+      { headers }
+    );
+    if (!rScores.ok) throw new Error(await rScores.text());
+    
+    const rawScores = await rScores.json();
+    const highestScores = new Map();
+    for (const score of (rawScores || [])) {
+      if (!highestScores.has(score.nome_exibicao)) {
+        highestScores.set(score.nome_exibicao, score);
+      }
+    }
+    
+    const ranking = Array.from(highestScores.values())
+      .sort((a, b) => b.pontos - a.pontos)
+      .slice(0, 5)
+      .map((r, i) => ({ ...r, posicao: i + 1 }));
     const lider = ranking?.[0];
 
     if (!lider) {
@@ -101,9 +114,6 @@ export default async function handler(req, res) {
     );
 
     // Quantas pessoas pontuaram no total (número pra anunciar no palco) APENAS HOJE.
-    const spDate = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
-    spDate.setHours(0, 0, 0, 0);
-    const startOfDay = spDate.toISOString();
 
     const rc = await fetch(
       `${process.env.SUPABASE_URL}/rest/v1/arcade_scores?select=participant_id&created_at=gte.${startOfDay}`,

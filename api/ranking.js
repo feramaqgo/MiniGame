@@ -23,19 +23,37 @@ export default async function handler(req, res) {
   const limiteNum = Math.min(Math.max(Number.parseInt(limite, 10) || 10, 1), 50);
 
   try {
-    const r = await fetch(`${process.env.SUPABASE_URL}/rest/v1/rpc/ranking_arcade`, {
-      method: "POST",
+    const spDate = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
+    spDate.setHours(0, 0, 0, 0);
+    const startOfDay = spDate.toISOString();
+
+    const url = new URL(`${process.env.SUPABASE_URL}/rest/v1/arcade_scores`);
+    url.searchParams.append("created_at", `gte.${startOfDay}`);
+    url.searchParams.append("select", "nome_exibicao,pontos,jogo");
+    url.searchParams.append("order", "pontos.desc,created_at.asc");
+    if (jogo) url.searchParams.append("jogo", `eq.${jogo}`);
+
+    const r = await fetch(url.toString(), {
       headers: {
-        "Content-Type": "application/json",
         apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
         Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
       },
-      body: JSON.stringify({ p_jogo: jogo || null, p_limite: limiteNum }),
     });
 
     if (!r.ok) throw new Error(await r.text());
 
-    const linhas = await r.json();
+    const rawScores = await r.json();
+    const highestScores = new Map();
+    for (const score of (rawScores || [])) {
+      if (!highestScores.has(score.nome_exibicao)) {
+        highestScores.set(score.nome_exibicao, score);
+      }
+    }
+    
+    const linhas = Array.from(highestScores.values())
+      .sort((a, b) => b.pontos - a.pontos)
+      .slice(0, limiteNum)
+      .map((r, i) => ({ ...r, posicao: i + 1 }));
 
     // Placar muda o tempo todo durante o evento — não deixa cachear.
     res.setHeader("Cache-Control", "no-store");
