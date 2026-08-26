@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
-import { Gift, ScanLine, Smartphone, Trophy } from "lucide-react";
+import { Gift, ScanLine, Smartphone, Trophy, PlayCircle } from "lucide-react";
 import { sfx } from "../../shared/lib/sfx";
 import BotaoInstalar from "../../shared/components/BotaoInstalar";
 import AttractorMode from "./AttractorMode";
@@ -140,6 +140,16 @@ export default function QrScreen({ onJaEscaneei, onVerCampeao }: QrScreenProps) 
             >
               <Trophy className="w-3 h-3" />
               Campeão do dia
+            </button>
+            <button
+              onClick={() => {
+                sfx.click();
+                setIsAttractorActive(true);
+              }}
+              className="inline-flex items-center gap-1.5 font-sans text-[10px] uppercase tracking-widest text-[#a89e86] hover:text-[#FF6801] transition-colors cursor-pointer px-3 py-2"
+            >
+              <PlayCircle className="w-3 h-3" />
+              Testar Atrator
             </button>
           </div>
         </div>
