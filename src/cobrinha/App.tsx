@@ -5,14 +5,13 @@ import MangoteGame from "./MangoteGame";
 import { requireSession } from "../shared/lib/session";
 import { sfx } from "../shared/lib/sfx";
 import { destinoAposVitoria } from "../shared/lib/vitoria";
-import { StoryScreen } from "../shared/components/StoryScreen";
 import { MusicHUD } from "../shared/components/MusicHUD";
 import SaidaDiscreta from "../shared/components/SaidaDiscreta";
 import { prepararCachePremios } from "../shared/lib/premios";
 
 export default function App() {
   const [sessionChecked, setSessionChecked] = useState(false);
-  const [etapa, setEtapa] = useState<"story" | "intro" | "jogando">("story");
+  const [etapa, setEtapa] = useState<"intro" | "jogando">("intro");
 
   useEffect(() => {
     if (requireSession()) setSessionChecked(true);
@@ -26,17 +25,7 @@ export default function App() {
   return (
     <div className="tela-arcade flex flex-col items-center justify-center px-3 sm:px-4 relative overflow-hidden">
       <MusicHUD src="/Música para a Cobrinha (Mangote).mp3" />
-      {etapa === "story" ? (
-        <StoryScreen 
-          avatarSrc="/Rino para o Jogo da Cobrinha (Mangote).png"
-          lines={[
-            "Você sabia que nossos equipamentos estão nas maiores obras do país?",
-            "Mas hoje, tivemos um pequeno problema... O mangote de concreto escapou da máquina!",
-            "Ele precisa de você para comer as porções de concreto e crescer. Vamos ajudá-lo a voltar pra obra?"
-          ]}
-          onComplete={() => setEtapa("intro")}
-        />
-      ) : etapa === "intro" ? (
+      {etapa === "intro" ? (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

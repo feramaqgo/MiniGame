@@ -13,12 +13,11 @@ import HeroScreen from "./components/HeroScreen";
 import InstrucaoScreen from "./components/InstrucaoScreen";
 import Game from "./components/Game";
 import ErroScreen from "./components/ErroScreen";
-import { StoryScreen } from "./shared/components/StoryScreen";
 import SaidaDiscreta from "./shared/components/SaidaDiscreta";
 import { prepararCachePremios } from "./shared/lib/premios";
 
 export default function App() {
-  const [etapa, setEtapa] = useState<Etapa>("story");
+  const [etapa, setEtapa] = useState<Etapa>("hero");
   const [sessionChecked, setSessionChecked] = useState(false);
   const inicioRef = useRef(performance.now()); // início da partida (placar)
   const tentativasRef = useRef(1); // em qual chute a pessoa está (placar)
@@ -58,19 +57,6 @@ export default function App() {
   // Render the current screen based on the single state `etapa`
   const renderScreen = () => {
     switch (etapa) {
-      case "story":
-        return (
-          <div className="w-full flex justify-center py-10 px-4 mt-8 md:mt-20">
-            <StoryScreen 
-              lines={[
-                "Hora de testar sua pontaria!",
-                "Na obra, precisão é tudo. Aqui também. Você precisa fazer um belo gol.",
-                "Mire direitinho, se acertar na rede, o acesso à roleta de prêmios é seu!"
-              ]}
-              onComplete={() => setEtapa("hero")}
-            />
-          </div>
-        );
       case "hero":
         return (
           <HeroScreen

@@ -1,8 +1,6 @@
 export type Etapa =
-  | "story_pre"
   | "resgatar"
   | "girando"
-  | "story_post"
   | "resultado"
   | "ja_participou"
   | "esgotado"
