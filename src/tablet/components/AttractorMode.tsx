@@ -7,7 +7,6 @@ interface AttractorModeProps {
 export default function AttractorMode({ onInteraction }: AttractorModeProps) {
   const [stateIndex, setStateIndex] = useState(0); // 0, 1, 2
   const [prizesRemaining, setPrizesRemaining] = useState<number | null>(null);
-  const [lastWinner, setLastWinner] = useState<{name: string, prizeName: string} | null>(null);
   const [prizes, setPrizes] = useState<{name: string}[]>([]);
 
   const v0Ref = useRef<HTMLVideoElement>(null);
@@ -46,37 +45,21 @@ export default function AttractorMode({ onInteraction }: AttractorModeProps) {
         }
       })
       .catch(console.error);
-
-    fetch("/api/ultimo-ganhador")
-      .then(r => r.json())
-      .then(d => {
-        if (d.ok && d.winner) {
-          setLastWinner(d.winner);
-        }
-      })
-      .catch(console.error);
   }, []);
 
-  // Loop de estados e controle dos vídeos
+  // Controle dos vídeos
   useEffect(() => {
-    // Durações: Estado 0 (8s), Estado 1 (6s), Estado 2 (10s)
-    const durations = [8000, 6000, 10000];
-    const timer = setTimeout(() => {
-      setStateIndex((prev) => (prev + 1) % 3);
-    }, durations[stateIndex]);
-
     const refs = [v0Ref.current, v1Ref.current, v2Ref.current];
     refs.forEach((v, i) => {
       if (v) {
         if (i === stateIndex) {
+          v.currentTime = 0;
           v.play().catch(() => {});
         } else {
           v.pause();
         }
       }
     });
-
-    return () => clearTimeout(timer);
   }, [stateIndex]);
 
   return (
@@ -92,8 +75,8 @@ export default function AttractorMode({ onInteraction }: AttractorModeProps) {
           ref={v0Ref}
           src="/rino-acenando.mp4" 
           poster="/rino-acenando.jpg"
-          loop 
           playsInline 
+          onEnded={() => setStateIndex((prev) => (prev + 1) % 3)}
           className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="absolute inset-x-0 bottom-[8vh] flex justify-center text-center">
@@ -111,8 +94,8 @@ export default function AttractorMode({ onInteraction }: AttractorModeProps) {
           ref={v1Ref}
           src="/rino-provocando.mp4" 
           poster="/rino-provocando.jpg"
-          loop 
           playsInline 
+          onEnded={() => setStateIndex((prev) => (prev + 1) % 3)}
           className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="absolute inset-x-0 bottom-0 pb-[8vh] pt-[15vh] bg-gradient-to-t from-black/80 to-transparent space-y-[4vh]">
@@ -130,15 +113,6 @@ export default function AttractorMode({ onInteraction }: AttractorModeProps) {
                 </div>
              </div>
           )}
-
-          {/* Bônus: Último Ganhador */}
-          {lastWinner && (
-            <div className="flex justify-center mt-[2vh]">
-              <div className="bg-[#FF6801] text-white px-[5vw] py-[2vh] rounded-2xl text-[4.5vw] font-sans font-bold shadow-2xl border-4 border-white/20 text-center mx-[4vw]">
-                {lastWinner.name} acabou de ganhar {lastWinner.prizeName}!
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
@@ -150,8 +124,8 @@ export default function AttractorMode({ onInteraction }: AttractorModeProps) {
           ref={v2Ref}
           src="/rino-apontando.mp4" 
           poster="/rino-apontando.jpg"
-          loop 
           playsInline 
+          onEnded={() => setStateIndex((prev) => (prev + 1) % 3)}
           className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="absolute inset-x-0 bottom-[8vh] flex justify-center text-center">
