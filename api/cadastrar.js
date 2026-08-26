@@ -35,18 +35,9 @@ export default async function handler(req, res) {
 
   const { idToken, celular, nome, empresa, cargo, email, tracking } = req.body || {};
 
-  const celularDigitos = (celular || "").replace(/\D/g, "");
-
-  // Empresa e cargo são obrigatórios nos dois caminhos: o Google não fornece
-  // nenhum dos dois, e são eles que qualificam o lead numa feira do setor.
-  if (
-    (celularDigitos.length !== 10 && celularDigitos.length !== 11) ||
-    !empresa?.trim() ||
-    !cargo?.trim()
-  ) {
-    res.status(400).json({ ok: false, message: "Dados inválidos" });
-    return;
-  }
+  const empresaStr = (empresa || "").trim();
+  const cargoStr = (cargo || "").trim();
+  const celularStr = (celular || "").trim();
 
   // O login do Google é o caminho preferido — traz nome e e-mail conferidos.
   // Mas ele trava mais do que parece em wi-fi de feira, então existe também o
@@ -76,12 +67,12 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         p_google_sub: google?.sub || null,
-        p_google_email: google?.email || email?.trim() || null,
+        p_google_email: google?.email || (email || "").trim() || null,
         p_google_name: nomeFinal,
         p_google_picture: google?.picture || null,
-        p_celular: celular,
-        p_empresa: empresa.trim(),
-        p_cargo: cargo.trim(),
+        p_celular: celularStr,
+        p_empresa: empresaStr,
+        p_cargo: cargoStr,
         p_google_verified: !!google,
       }),
     });
@@ -147,10 +138,10 @@ export default async function handler(req, res) {
           codigo_participacao: codigo,
           dados_do_lead: {
             nome: nomeFinal,
-            empresa: empresa.trim(),
-            cargo: cargo.trim(),
+            empresa: empresaStr,
+            cargo: cargoStr,
             email: emailFinal,
-            celular,
+            celular: celularStr,
             google_sub: google?.sub || null,
             identidade_verificada: !!google,
           },
