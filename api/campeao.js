@@ -100,9 +100,13 @@ export default async function handler(req, res) {
       })
     );
 
-    // Quantas pessoas pontuaram no total (número pra anunciar no palco).
+    // Quantas pessoas pontuaram no total (número pra anunciar no palco) APENAS HOJE.
+    const spDate = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
+    spDate.setHours(0, 0, 0, 0);
+    const startOfDay = spDate.toISOString();
+
     const rc = await fetch(
-      `${process.env.SUPABASE_URL}/rest/v1/arcade_scores?select=participant_id`,
+      `${process.env.SUPABASE_URL}/rest/v1/arcade_scores?select=participant_id&created_at=gte.${startOfDay}`,
       { headers: { ...headers, Prefer: "count=exact", Range: "0-0" } }
     );
     const contentRange = rc.headers.get("content-range") || "";
