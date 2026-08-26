@@ -1,5 +1,6 @@
 import { getSession } from "./session";
 import { getTabletSenha } from "./tablet";
+import { enfileirar, sincronizar } from "./outbox";
 
 export type Jogo = "chute" | "memoria" | "cobrinha" | "velha";
 
@@ -24,7 +25,7 @@ export interface MetricasPartida {
  *
  * Manda só as métricas cruas — quem calcula os pontos é o servidor. Falhar
  * aqui nunca pode segurar o visitante: se o placar não gravar, o jogo segue
- * normalmente pra roleta.
+ * normalmente pra roleta. Agora usa o outbox para sobreviver offline.
  */
 export async function registrarScore(
   jogo: Jogo,
@@ -36,21 +37,19 @@ export async function registrarScore(
     // Modo equipe (/menu5398) nunca entra no placar oficial.
     if (session.equipe) return null;
 
-    const resposta = await fetch("/api/score", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        codigo: session.codigo,
-        senha: getTabletSenha(),
-        jogo,
-        ...metricas,
-        tempoMs: Math.round(metricas.tempoMs),
-      }),
-    });
+    const payload = {
+      codigo: session.codigo,
+      senha: getTabletSenha(),
+      jogo,
+      ...metricas,
+      tempoMs: Math.round(metricas.tempoMs),
+    };
 
-    if (!resposta.ok) return null;
-    const dados = await resposta.json();
-    return typeof dados?.pontos === "number" ? dados.pontos : null;
+    const outboxId = `score-${session.codigo}-${Date.now()}`;
+    enfileirar(outboxId, "/api/score", payload);
+    sincronizar();
+
+    return null;
   } catch {
     return null;
   }

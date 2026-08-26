@@ -93,10 +93,10 @@ export default function App() {
                 <span>ACERTE O GOL E GANHE UM PRÊMIO</span>
               </h2>
               <Game
-                onGoal={async (margem) => {
+                onGoal={(margem) => {
                   // Grava o placar antes de sair da página; se falhar, segue
-                  // pra roleta do mesmo jeito.
-                  await registrarScore("chute", {
+                  // pra roleta do mesmo jeito (agora em background via outbox).
+                  registrarScore("chute", {
                     tempoMs: performance.now() - inicioRef.current,
                     tentativas: tentativasRef.current,
                     margem,

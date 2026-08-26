@@ -17,13 +17,12 @@
 // subir aqui, um aparelho que já tenha um cache quebrado da versão anterior
 // continua usando o cache quebrado, mesmo com o service worker novo. Foi
 // exatamente o que aconteceu quando o pre-cache atômico falhava em silêncio.
-const VERSAO = "v2";
+const VERSAO = "v3";
 const CACHE_ESTATICO = `feramaq-estatico-${VERSAO}`;
 const CACHE_PAGINAS = `feramaq-paginas-${VERSAO}`;
 
-// Casca mínima pra abrir offline.
-// Todas as telas do ciclo, não só a inicial: quem está offline precisa
-// conseguir abrir o jogo, não apenas a home.
+// Casca mínima pra abrir offline e todas as mídias pesadas.
+// Agora o jogo puxa as imagens e sons instantaneamente da memória.
 const PRE_CACHE = [
   "/",
   "/tablet",
@@ -32,8 +31,40 @@ const PRE_CACHE = [
   "/memoria",
   "/velha",
   "/roleta",
-  "/icon-192.png",
   "/manifest.webmanifest",
+  // Mídias do jogo
+  "/apple-touch-icon.png",
+  "/bola.png",
+  "/gol-sound.mp3",
+  "/icon-192.png",
+  "/icon-512.png",
+  "/icon-maskable-512.png",
+  "/maquina-fmct.png",
+  "/memoria-1.jpg",
+  "/memoria-2.jpg",
+  "/memoria-3.jpg",
+  "/memoria-4.jpg",
+  "/memoria-5.jpg",
+  "/memoria-6.jpg",
+  "/musica-fundo.mp3",
+  "/Música para a Cobrinha (Mangote).mp3",
+  "/Música para a Roleta.mp3",
+  "/Música para o Hub (Menu).mp3",
+  "/Música para o Jogo da Memória.mp3",
+  "/Música para o Jogo da Velha.mp3",
+  "/Rino para a Roleta (Antes de Girar - AnsiedadeSorte).png",
+  "/Rino para a Roleta (Depois de Girar - Comemoração).png",
+  "/Rino para o Jogo da Cobrinha (Mangote).png",
+  "/Rino para o Jogo da Memória.png",
+  "/Rino para o Jogo da Velha.png",
+  "/Rino para o Menu Inicial (Hub).png",
+  "/rino-acenando.mp4",
+  "/rino-apontando.mp4",
+  "/rino-provocando.mp4",
+  "/rinoceronte-goleiro.png",
+  "/roleta-fundo.mp4",
+  "/roleta-resultado-fundo.mp4",
+  "/stadium-bg.png"
 ];
 
 self.addEventListener("install", (event) => {
