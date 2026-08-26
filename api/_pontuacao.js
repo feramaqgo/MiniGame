@@ -69,7 +69,7 @@ const REGRAS = {
 function normalizar(valor, otimo, pessimo) {
   if (typeof valor !== "number" || Number.isNaN(valor)) return 0;
   const bruto = (valor - pessimo) / (otimo - pessimo);
-  return Math.max(0, Math.min(1, bruto));
+  return Math.max(0, bruto);
 }
 
 function calcularPontos(jogo, dados) {

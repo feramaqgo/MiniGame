@@ -1,7 +1,7 @@
 // Campeão do dia — tela de encerramento acionada pela equipe do estande.
 // Protegido pela senha da equipe: além do nome de exibição, devolve o nome
-// completo e o código, pra chamar a pessoa certa na hora de premiar.
-// Não devolve e-mail nem celular; se precisar do contato, está no Supabase.
+// completo, código e celular (para equipe apenas), pra chamar a pessoa certa.
+// Não devolve e-mail; se precisar do contato longo, está no Supabase.
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -50,14 +50,55 @@ export default async function handler(req, res) {
     const registro = rr.ok ? (await rr.json())?.[0] : null;
 
     let nomeCompleto = lider.nome_exibicao;
+    let celularCampeao = null;
     if (registro?.participant_id) {
       const rp = await fetch(
         `${process.env.SUPABASE_URL}/rest/v1/roleta_participants` +
-          `?id=eq.${registro.participant_id}&select=google_name`,
+          `?id=eq.${registro.participant_id}&select=google_name,celular`,
         { headers }
       );
-      if (rp.ok) nomeCompleto = (await rp.json())?.[0]?.google_name || nomeCompleto;
+      if (rp.ok) {
+        const pData = (await rp.json())?.[0];
+        nomeCompleto = pData?.google_name || nomeCompleto;
+        celularCampeao = pData?.celular || null;
+      }
     }
+
+    // Busca os telefones dos demais participantes do ranking
+    const rankingEnriquecido = await Promise.all(
+      (ranking || []).map(async (l) => {
+        let celular = null;
+        try {
+          const rScore = await fetch(
+            `${process.env.SUPABASE_URL}/rest/v1/arcade_scores` +
+              `?nome_exibicao=eq.${encodeURIComponent(l.nome_exibicao)}` +
+              `&pontos=eq.${l.pontos}&select=participant_id&limit=1`,
+            { headers }
+          );
+          const scoreData = rScore.ok ? (await rScore.json())?.[0] : null;
+          if (scoreData?.participant_id) {
+            const rPart = await fetch(
+              `${process.env.SUPABASE_URL}/rest/v1/roleta_participants` +
+                `?id=eq.${scoreData.participant_id}&select=celular`,
+              { headers }
+            );
+            if (rPart.ok) {
+              const partData = (await rPart.json())?.[0];
+              celular = partData?.celular || null;
+            }
+          }
+        } catch (e) {
+          console.error("Erro buscando celular de", l.nome_exibicao, e);
+        }
+        return {
+          posicao: Number(l.posicao),
+          nome: l.nome_exibicao,
+          pontos: l.pontos,
+          jogo: l.jogo,
+          celular: celular,
+        };
+      })
+    );
 
     // Quantas pessoas pontuaram no total (número pra anunciar no palco).
     const rc = await fetch(
@@ -76,13 +117,9 @@ export default async function handler(req, res) {
         codigo: registro?.codigo ?? null,
         pontos: lider.pontos,
         jogo: lider.jogo,
+        celular: celularCampeao,
       },
-      ranking: (ranking || []).map((l) => ({
-        posicao: Number(l.posicao),
-        nome: l.nome_exibicao,
-        pontos: l.pontos,
-        jogo: l.jogo,
-      })),
+      ranking: rankingEnriquecido,
       total,
     });
   } catch (err) {

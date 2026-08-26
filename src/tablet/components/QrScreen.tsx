@@ -3,6 +3,9 @@ import QRCode from "qrcode";
 import { Gift, ScanLine, Smartphone, Trophy } from "lucide-react";
 import { sfx } from "../../shared/lib/sfx";
 import BotaoInstalar from "../../shared/components/BotaoInstalar";
+import AttractorMode from "./AttractorMode";
+
+const TEMPO_INATIVIDADE_ATRADOR = 5 * 60 * 1000;
 
 interface QrScreenProps {
   onJaEscaneei: () => void;
@@ -19,6 +22,27 @@ const passos = [
 /** Tela de descanso do tablet: QR gigante convidando o visitante. */
 export default function QrScreen({ onJaEscaneei, onVerCampeao }: QrScreenProps) {
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  const [isAttractorActive, setIsAttractorActive] = useState(false);
+
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+
+    const resetTimer = () => {
+      clearTimeout(timeout);
+      setIsAttractorActive(false);
+      timeout = setTimeout(() => setIsAttractorActive(true), TEMPO_INATIVIDADE_ATRADOR);
+    };
+
+    const events = ["touchstart", "mousedown", "keydown", "mousemove", "scroll"];
+    events.forEach(e => window.addEventListener(e, resetTimer, { capture: true }));
+    
+    resetTimer();
+
+    return () => {
+      clearTimeout(timeout);
+      events.forEach(e => window.removeEventListener(e, resetTimer, { capture: true }));
+    };
+  }, []);
 
   useEffect(() => {
     QRCode.toDataURL(window.location.origin, {
@@ -32,6 +56,9 @@ export default function QrScreen({ onJaEscaneei, onVerCampeao }: QrScreenProps) 
 
   return (
     <div className="tela-arcade flex flex-col items-center justify-center px-4 sm:px-6 relative overflow-hidden">
+      {isAttractorActive && (
+        <AttractorMode onInteraction={() => setIsAttractorActive(false)} />
+      )}
       {/* Molduras de canteiro no topo e na base — enquadram o tablet no estande */}
       <div className="faixa-perigo fixed top-0 inset-x-0 h-3 z-40 pointer-events-none" />
       <div className="faixa-perigo fixed bottom-0 inset-x-0 h-3 z-40 pointer-events-none" />
