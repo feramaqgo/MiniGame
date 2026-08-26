@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef } from "react";
-import QRCode from "qrcode";
 
 interface AttractorModeProps {
   onInteraction: () => void;
@@ -9,7 +8,6 @@ export default function AttractorMode({ onInteraction }: AttractorModeProps) {
   const [stateIndex, setStateIndex] = useState(0); // 0, 1, 2
   const [prizesRemaining, setPrizesRemaining] = useState<number | null>(null);
   const [lastWinner, setLastWinner] = useState<{name: string, prizeName: string} | null>(null);
-  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [prizes, setPrizes] = useState<{name: string}[]>([]);
 
   const v0Ref = useRef<HTMLVideoElement>(null);
@@ -57,12 +55,6 @@ export default function AttractorMode({ onInteraction }: AttractorModeProps) {
         }
       })
       .catch(console.error);
-
-    QRCode.toDataURL(window.location.origin, {
-      width: 800,
-      margin: 1,
-      color: { dark: "#1A1208", light: "#FFFFFF" },
-    }).then(setQrDataUrl);
   }, []);
 
   // Loop de estados e controle dos vídeos
@@ -100,7 +92,6 @@ export default function AttractorMode({ onInteraction }: AttractorModeProps) {
           ref={v0Ref}
           src="/rino-acenando.mp4" 
           poster="/rino-acenando.jpg"
-          muted 
           loop 
           playsInline 
           className="absolute inset-0 w-full h-full object-cover"
@@ -120,7 +111,6 @@ export default function AttractorMode({ onInteraction }: AttractorModeProps) {
           ref={v1Ref}
           src="/rino-provocando.mp4" 
           poster="/rino-provocando.jpg"
-          muted 
           loop 
           playsInline 
           className="absolute inset-0 w-full h-full object-cover"
@@ -154,30 +144,20 @@ export default function AttractorMode({ onInteraction }: AttractorModeProps) {
 
       {/* ESTADO 3: Apontando (~10s) */}
       <div 
-        className={`absolute inset-0 flex flex-col transition-opacity duration-700 ${stateIndex === 2 ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+        className={`absolute inset-0 flex flex-col items-center justify-end pb-[10vh] transition-opacity duration-700 ${stateIndex === 2 ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
       >
-        <div className="h-1/2 w-full relative">
-          <video 
-            ref={v2Ref}
-            src="/rino-apontando.mp4" 
-            poster="/rino-apontando.jpg"
-            muted 
-            loop 
-            playsInline 
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-        </div>
-        <div className="h-1/2 w-full bg-[#FF6801] flex flex-col items-center justify-start pt-[6vh]">
-          <div className="relative animate-[pulse-qr-large_3s_ease-in-out_infinite] rounded-[2rem] p-[1.5vw] bg-white/20">
-            {qrDataUrl ? (
-              <img src={qrDataUrl} alt="QR Code" className="w-[55vw] max-w-[450px] aspect-square rounded-[1.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)]" />
-            ) : (
-              <div className="w-[55vw] max-w-[450px] aspect-square bg-white/20 rounded-[1.5rem] animate-pulse" />
-            )}
-          </div>
-          <p className="mt-[6vh] font-display text-[8vw] leading-tight text-white uppercase font-bold tracking-widest text-center px-4 drop-shadow-md">
-            Aponte a câmera<br/>do celular
-          </p>
+        <video 
+          ref={v2Ref}
+          src="/rino-apontando.mp4" 
+          poster="/rino-apontando.jpg"
+          loop 
+          playsInline 
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-x-0 bottom-[8vh] flex justify-center text-center">
+          <h1 className="font-display text-[12vw] leading-[0.9] uppercase font-bold text-white drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)] w-[95%] break-words motion-safe:animate-[pulse-scale_2s_ease-in-out_infinite]">
+            Toque na tela<br/>para jogar
+          </h1>
         </div>
       </div>
 

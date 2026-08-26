@@ -149,7 +149,7 @@ export default function QrScreen({ onJaEscaneei, onVerCampeao }: QrScreenProps) 
               className="inline-flex items-center gap-1.5 font-sans text-[10px] uppercase tracking-widest text-[#a89e86] hover:text-[#FF6801] transition-colors cursor-pointer px-3 py-2"
             >
               <PlayCircle className="w-3 h-3" />
-              Testar Atrator
+              Play
             </button>
           </div>
         </div>
